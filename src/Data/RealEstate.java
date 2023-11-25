@@ -1,0 +1,59 @@
+package Data;
+
+public class RealEstate extends CadastralObject {
+
+    private final int MAX_COUNT_OF_PARCELS = 6;
+    private final int MAX_LENGTH_OF_ESTATE_DESCRIPTION = 15;
+    private int serialNumber;
+    private int[] belongingLandParcels;
+    public RealEstate(
+            int parIdentityNumber,
+            GPS[] parGpsCoordinates,
+            String parDescription,
+            int parSerialNumber
+    ) {
+        super(parIdentityNumber, parGpsCoordinates, parDescription);
+
+        this.serialNumber = parSerialNumber;
+
+        this.belongingLandParcels = new int[MAX_COUNT_OF_PARCELS];
+        for (int i = 0; i < MAX_COUNT_OF_PARCELS; i++) {
+            this.belongingLandParcels[i] = -1;
+        }
+    }
+
+    @Override
+    public TypeOfCadastralObject isInstanceOf() {
+        return TypeOfCadastralObject.REAL_ESTATE;
+    }
+
+    @Override
+    public void setDescription(String parDescription) {
+        if (parDescription != null && parDescription.length() > MAX_LENGTH_OF_ESTATE_DESCRIPTION) {
+            this.description = parDescription.substring(0,MAX_LENGTH_OF_ESTATE_DESCRIPTION);
+        } else {
+            this.description = parDescription;
+        }
+    }
+
+    public int getSerialNumber() {
+        return serialNumber;
+    }
+
+    public void setSerialNumber(int parSerialNumber) {
+        this.serialNumber = parSerialNumber;
+    }
+
+    public int[] getBelongingLandParcels() {
+        return this.belongingLandParcels;
+    }
+
+    public void addBelongingLandParcel(int parIdentityNumber) {
+        for (int i = 0; i < MAX_COUNT_OF_PARCELS; i++) {
+            if (this.belongingLandParcels[i] == -1) {
+                this.belongingLandParcels[i] = parIdentityNumber;
+                break;
+            }
+        }
+    }
+}
