@@ -1,5 +1,10 @@
 package Data;
 
+import java.io.*;
+
+/**
+ * This class extends cadastral object abstract class. Contains added data specific for this class.
+ */
 public class LandParcel extends CadastralObject {
 
     private final int MAX_COUNT_OF_ESTATES = 5;
@@ -33,6 +38,30 @@ public class LandParcel extends CadastralObject {
         }
     }
 
+    @Override
+    public void serializeDetails(DataOutputStream parOutputStream) throws IOException {
+        for (int act: this.belongingRealEstates) {
+            parOutputStream.writeInt(act);
+        }
+    }
+
+    @Override
+    public void deserializeDetails(DataInputStream parInputStream) throws IOException {
+        for (int i = 0; i < MAX_COUNT_OF_ESTATES; i++) {
+            this.belongingRealEstates[i] = parInputStream.readInt();
+        }
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder idesOfRealEstates = new StringBuilder("");
+        for (int akt: this.belongingRealEstates) {
+            idesOfRealEstates.append(akt);
+            idesOfRealEstates.append(" ");
+        }
+        return "Land Parcel: " + super.toString() + " " + idesOfRealEstates;
+    }
+
     public int[] getBelongingRealEstates() {
         return this.belongingRealEstates;
     }
@@ -46,8 +75,14 @@ public class LandParcel extends CadastralObject {
         }
     }
 
-    public byte[] serialize() {
-        return null;
+    public void makeEverythingNull() {
+        super.makeEverythingNull();
+        for (int i = 0; i < MAX_COUNT_OF_ESTATES; i++) {
+            this.belongingRealEstates[i] = -1;
+        }
     }
+
+//    Na pracu so suborom sa pouzije RandomAccessFile a na jeho zmensenie
+//RandomAccessFile.setLength(long newLength)
 
 }

@@ -1,8 +1,16 @@
 package Data;
 
+import java.io.*;
+import java.text.DecimalFormat;
+
+/**
+ * Represent some cadastral object - in this case it could be Land Parcel or Real Estate.
+ * This abstract class contains common data for all inherit classes, possible methods and abstract methods
+ * which is needed to override in child.
+ */
 public abstract class CadastralObject {
 
-    private static final int COORDINATES_COUNT = 2;
+    protected final int COORDINATES_COUNT = 2;
     public enum TypeOfCadastralObject {
         LAND_PARCEL,
         REAL_ESTATE
@@ -24,7 +32,9 @@ public abstract class CadastralObject {
 
     public abstract void setDescription(String description);
 
-    //public abstract byte[] serialize();
+    public abstract void serializeDetails(DataOutputStream outputStream) throws IOException;
+
+    public abstract void deserializeDetails(DataInputStream inputStream) throws IOException;
 
     //public getHash()
 
@@ -63,4 +73,83 @@ public abstract class CadastralObject {
     public void setGpsCoordinates(GPS[] parGpsCoordinates) {
         this.gpsCoordinates = parGpsCoordinates;
     }
+
+    public String toString() {
+
+        DecimalFormat df = new DecimalFormat("#.###");
+        return  "id: " + this.identityNumber +
+                ", desc: " + this.description +
+                ", 1. coors: lat: " + this.gpsCoordinates[0].stringMapLatitudeName() +
+                ", pos: " + df.format(this.gpsCoordinates[0].getLatitudePosition()) +
+                ", long: " + this.gpsCoordinates[0].stringMapLongitudeName() +
+                ", pos: " + df.format(this.gpsCoordinates[0].getLongitudePosition()) +
+                ", 2. coors: lat: " + this.gpsCoordinates[1].stringMapLatitudeName() +
+                ", pos: " + df.format(this.gpsCoordinates[1].getLatitudePosition()) +
+                ", long: " + this.gpsCoordinates[1].stringMapLongitudeName() +
+                ", pos: " + df.format(this.gpsCoordinates[1].getLongitudePosition());
+    }
+
+    public byte[] ToByteArray() {
+        ByteArrayOutputStream hlpByteArrayOutputStream = new ByteArrayOutputStream();
+        DataOutputStream hlpOutStream = new DataOutputStream(hlpByteArrayOutputStream);
+
+        try {
+            hlpOutStream.writeInt(this.identityNumber);
+            hlpOutStream.writeUTF(this.description);
+
+            for (int i = 0; i < COORDINATES_COUNT; i++) {
+                hlpOutStream.writeUTF(this.gpsCoordinates[i].stringMapLongitudeName());
+                hlpOutStream.writeDouble(this.gpsCoordinates[i].getLongitudePosition());
+                hlpOutStream.writeUTF(this.gpsCoordinates[i].stringMapLatitudeName());
+                hlpOutStream.writeDouble(this.gpsCoordinates[i].getLatitudePosition());
+            }
+
+            this.serializeDetails(hlpOutStream);
+
+            return hlpByteArrayOutputStream.toByteArray();
+        } catch (IOException e) {
+            throw new IllegalStateException("Error during conversion to byte array.");
+        }
+    }
+
+    public void FromByteArray(byte[] paArray) {
+
+        this.makeEverythingNull();
+        System.out.println(toString());
+
+        ByteArrayInputStream hlpByteArrayInputStream = new ByteArrayInputStream(paArray);
+        DataInputStream hlpInStream = new DataInputStream(hlpByteArrayInputStream);
+
+        try {
+
+            this.identityNumber = hlpInStream.readInt();
+            this.description = hlpInStream.readUTF();
+
+            for (int i = 0; i < COORDINATES_COUNT; i++) {
+                this.gpsCoordinates[i].setLongitude(hlpInStream.readUTF());
+                this.gpsCoordinates[i].setLongitudePosition(hlpInStream.readDouble());
+                this.gpsCoordinates[i].setLatitude(hlpInStream.readUTF());
+                this.gpsCoordinates[i].setLatitudePosition(hlpInStream.readDouble());
+            }
+
+            this.deserializeDetails(hlpInStream);
+
+            System.out.println(this.toString());
+
+        } catch (IOException e) {
+            throw new IllegalStateException("Error during conversion from byte array.");
+        }
+    }
+
+    protected void makeEverythingNull() {
+        this.identityNumber = 0;
+        this.description = "";
+        for (int i = 0; i < COORDINATES_COUNT; i++) {
+            this.gpsCoordinates[i].setLongitude("");
+            this.gpsCoordinates[i].setLongitudePosition(0);
+            this.gpsCoordinates[i].setLatitude("");
+            this.gpsCoordinates[i].setLatitudePosition(0);
+        }
+    }
+
 }

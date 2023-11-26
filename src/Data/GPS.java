@@ -1,5 +1,7 @@
 package Data;
 
+import org.jetbrains.annotations.NotNull;
+
 /**
  * Represents GPS coordinates of cadastral objects
  */
@@ -33,6 +35,18 @@ public class GPS {
         this.longitudePosition = parLongitudePosition;
     }
 
+    public GPS (
+            String parLatitude,
+            double parLatitudePosition,
+            String parLongitude,
+            double parLongitudePosition
+    ) {
+        this.setLatitude(parLatitude);
+        this.setLongitude(parLongitude);
+        this.latitudePosition = parLatitudePosition;
+        this.longitudePosition = parLongitudePosition;
+    }
+
     /**
      * Getters and setters
      */
@@ -50,6 +64,30 @@ public class GPS {
 
     public double getLongitudePosition() {
         return longitudePosition;
+    }
+
+    public void setLatitude(String parLatitude) {
+        if (parLatitude.equals("N")) {
+            this.latitude = Latitude.NORTH;
+        } else {
+            this.latitude = Latitude.SOUTH;
+        }
+    }
+
+    public void setLongitude(String parLongitude) {
+        if (parLongitude.equals("W")) {
+            this.longitude = Longitude.WEST;
+        } else {
+            this.longitude = Longitude.EAST;
+        }
+    }
+
+    public void setLatitudePosition(double parLatitudePosition) {
+        this.latitudePosition = parLatitudePosition;
+    }
+
+    public void setLongitudePosition(double parLongitudePosition) {
+        this.longitudePosition = parLongitudePosition;
     }
 
     /**
