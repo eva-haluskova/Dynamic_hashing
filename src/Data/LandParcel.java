@@ -24,6 +24,14 @@ public class LandParcel extends CadastralObject {
         }
     }
 
+    public LandParcel(
+            byte[] parSerializedObject
+    ) {
+        super(parSerializedObject);
+        this.belongingRealEstates = new int[MAX_COUNT_OF_ESTATES];
+        this.fromByteArray(parSerializedObject);
+    }
+
     @Override
     public TypeOfCadastralObject isInstanceOf() {
         return TypeOfCadastralObject.LAND_PARCEL;
@@ -81,8 +89,5 @@ public class LandParcel extends CadastralObject {
             this.belongingRealEstates[i] = -1;
         }
     }
-
-//    Na pracu so suborom sa pouzije RandomAccessFile a na jeho zmensenie
-//RandomAccessFile.setLength(long newLength)
 
 }

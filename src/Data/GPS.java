@@ -47,6 +47,10 @@ public class GPS {
         this.longitudePosition = parLongitudePosition;
     }
 
+    public GPS() {
+        this("N",0,"W",0);
+    }
+
     /**
      * Getters and setters
      */

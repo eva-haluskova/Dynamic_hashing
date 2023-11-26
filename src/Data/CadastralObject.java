@@ -28,6 +28,14 @@ public abstract class CadastralObject {
         this.gpsCoordinates = parGpsCoordinates;
         this.setDescription(parDescription);
     }
+
+    public CadastralObject(
+            byte[] parSerializedObject
+    ) {
+        GPS[] gps = {new GPS(),new GPS()};
+        this.gpsCoordinates = gps;
+    }
+
     public abstract TypeOfCadastralObject isInstanceOf();
 
     public abstract void setDescription(String description);
@@ -89,7 +97,7 @@ public abstract class CadastralObject {
                 ", pos: " + df.format(this.gpsCoordinates[1].getLongitudePosition());
     }
 
-    public byte[] ToByteArray() {
+    public byte[] toByteArray() {
         ByteArrayOutputStream hlpByteArrayOutputStream = new ByteArrayOutputStream();
         DataOutputStream hlpOutStream = new DataOutputStream(hlpByteArrayOutputStream);
 
@@ -112,10 +120,13 @@ public abstract class CadastralObject {
         }
     }
 
-    public void FromByteArray(byte[] paArray) {
+    public void fromByteArray(byte[] paArray) {
 
+        // just for make sure it has changes values
         this.makeEverythingNull();
-        System.out.println(toString());
+        if (this.description != null) {
+            System.out.println(this);
+        }
 
         ByteArrayInputStream hlpByteArrayInputStream = new ByteArrayInputStream(paArray);
         DataInputStream hlpInStream = new DataInputStream(hlpByteArrayInputStream);
@@ -134,7 +145,7 @@ public abstract class CadastralObject {
 
             this.deserializeDetails(hlpInStream);
 
-            System.out.println(this.toString());
+            System.out.println(this);
 
         } catch (IOException e) {
             throw new IllegalStateException("Error during conversion from byte array.");

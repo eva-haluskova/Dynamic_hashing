@@ -7,24 +7,6 @@ import java.nio.ByteBuffer;
 
 public class Main {
     public static void main(String[] args) {
-//        String filename = "sikovnaEvickaProgramatorka.ausdva";
-//        File f = new File(filename);
-//        byte[] buffer = new byte[100];
-//        ByteArrayInputStream bais = new ByteArrayInputStream(buffer);
-//        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-//        //new FileWriter("abcd").write(bais);
-//        System.out.println("Hello world!");
-//        byte[] wt = getFromInt(15);
-//        System.out.println(wt);
-//        String back = new String(wt);
-//        System.out.println(back);
-//
-//        try {
-//            var fr = new FileReader("abcd");
-//
-//        } catch (FileNotFoundException e) {
-//            throw new RuntimeException(e);
-//        }
 
         GPS gpsOne = new GPS("N",60,"W",30);
         GPS gpsTwo = new GPS("S",30,"E",20);
@@ -45,11 +27,16 @@ public class Main {
         estate.addBelongingLandParcel(3);
         estate.addBelongingLandParcel(44);
 
-        byte[] parSer = parcel.ToByteArray();
-        parcel.FromByteArray(parSer);
+        byte[] parSer = parcel.toByteArray();
+        parcel.fromByteArray(parSer);
 
-        byte[] realSer = estate.ToByteArray();
-        estate.FromByteArray(realSer);
+        byte[] realSer = estate.toByteArray();
+        estate.fromByteArray(realSer);
+
+
+        RealEstate anoter = new RealEstate(realSer);
+
+        LandParcel ano = new LandParcel(parSer);
 
         System.out.println("Zatiaľ to funguje ^-^");
     }
@@ -65,3 +52,6 @@ public class Main {
 //        return imd.getBytes();
 //    }
 }
+
+//    Na pracu so suborom sa pouzije RandomAccessFile a na jeho zmensenie
+//RandomAccessFile.setLength(long newLength)

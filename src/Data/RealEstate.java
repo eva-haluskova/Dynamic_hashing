@@ -29,6 +29,14 @@ public class RealEstate extends CadastralObject {
         }
     }
 
+    public RealEstate(
+            byte[] parSerializedObject
+    ) {
+        super(parSerializedObject);
+        this.belongingLandParcels = new int[MAX_COUNT_OF_PARCELS];
+        this.fromByteArray(parSerializedObject);
+    }
+
     @Override
     public TypeOfCadastralObject isInstanceOf() {
         return TypeOfCadastralObject.REAL_ESTATE;
