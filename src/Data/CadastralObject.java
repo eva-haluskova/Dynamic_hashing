@@ -16,8 +16,8 @@ public abstract class CadastralObject {
         REAL_ESTATE
     }
     protected int identityNumber;
-    protected String description;
     protected GPS[] gpsCoordinates;
+    protected String description;
 
     public CadastralObject(
             int parIdentityNumber,
