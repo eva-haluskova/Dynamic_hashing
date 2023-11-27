@@ -368,8 +368,6 @@ public class QuadTree<T> {
 
     /**
      * Method delete appropriate data from tree
-     * @param parCoordinates of data we want to delete
-     * @param parId of data. It's needed, because in tree could by more data with same coordinates
      */
     public void delete(Data<T> parData) {
 
