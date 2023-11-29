@@ -1,4 +1,8 @@
-package Structure;
+package Structure.DynamicHashing.Nodes;
+
+/**
+ * Represents external node which contain attributes for working with data.
+ */
 
 public class ExternalNode extends Node {
 

@@ -1,14 +1,18 @@
 package Data;
 
+import Structure.DynamicHashing.IRecord;
+
 import java.io.*;
 import java.text.DecimalFormat;
+import java.util.BitSet;
 
 /**
  * Represent some cadastral object - in this case it could be Land Parcel or Real Estate.
  * This abstract class contains common data for all inherit classes, possible methods and abstract methods
- * which is needed to override in child.
+ * which is needed to override in child. Class also implements IRecord interface because we treat this
+ * classes like records into dynamic hashing and for this purpose we need this classes implement special methods.
  */
-public abstract class CadastralObject {
+public abstract class CadastralObject implements IRecord {
 
     protected final int COORDINATES_COUNT = 2;
     public enum TypeOfCadastralObject {
@@ -29,6 +33,9 @@ public abstract class CadastralObject {
         this.setDescription(parDescription);
     }
 
+    /**
+     * We can also create cadastral object from byte array
+     */
     public CadastralObject(
             byte[] parSerializedObject
     ) {
@@ -36,6 +43,9 @@ public abstract class CadastralObject {
         this.gpsCoordinates = gps;
     }
 
+    /**
+     * Abstract methods for overriding
+     */
     public abstract TypeOfCadastralObject isInstanceOf();
 
     public abstract void setDescription(String description);
@@ -44,24 +54,9 @@ public abstract class CadastralObject {
 
     public abstract void deserializeDetails(DataInputStream inputStream) throws IOException;
 
-    //public getHash()
-
-    public static boolean areEqual(CadastralObject firstCadastralObject, CadastralObject secondCadastralObject) {
-        if (
-            (firstCadastralObject.isInstanceOf().equals(TypeOfCadastralObject.LAND_PARCEL) &&
-            secondCadastralObject.isInstanceOf().equals(TypeOfCadastralObject.LAND_PARCEL)) &&
-            firstCadastralObject.getIdentityNumber() == secondCadastralObject.getIdentityNumber()
-        ){
-            return true;
-        } else if ((firstCadastralObject.isInstanceOf().equals(TypeOfCadastralObject.REAL_ESTATE) &&
-                secondCadastralObject.isInstanceOf().equals(TypeOfCadastralObject.REAL_ESTATE)) &&
-                firstCadastralObject.getIdentityNumber() == secondCadastralObject.getIdentityNumber()
-        ) {
-            return true;
-        }
-        return false;
-    }
-
+    /**
+     * Getters and setters of attributes
+     */
     public int getIdentityNumber() {
         return identityNumber;
     }
@@ -82,21 +77,10 @@ public abstract class CadastralObject {
         this.gpsCoordinates = parGpsCoordinates;
     }
 
-    public String toString() {
-
-        DecimalFormat df = new DecimalFormat("#.###");
-        return  "id: " + this.identityNumber +
-                ", desc: " + this.description +
-                ", 1. coors: lat: " + this.gpsCoordinates[0].stringMapLatitudeName() +
-                ", pos: " + df.format(this.gpsCoordinates[0].getLatitudePosition()) +
-                ", long: " + this.gpsCoordinates[0].stringMapLongitudeName() +
-                ", pos: " + df.format(this.gpsCoordinates[0].getLongitudePosition()) +
-                ", 2. coors: lat: " + this.gpsCoordinates[1].stringMapLatitudeName() +
-                ", pos: " + df.format(this.gpsCoordinates[1].getLatitudePosition()) +
-                ", long: " + this.gpsCoordinates[1].stringMapLongitudeName() +
-                ", pos: " + df.format(this.gpsCoordinates[1].getLongitudePosition());
-    }
-
+    /**
+     * Methods overrode from interface
+     */
+    @Override
     public byte[] toByteArray() {
         ByteArrayOutputStream hlpByteArrayOutputStream = new ByteArrayOutputStream();
         DataOutputStream hlpOutStream = new DataOutputStream(hlpByteArrayOutputStream);
@@ -120,6 +104,7 @@ public abstract class CadastralObject {
         }
     }
 
+    @Override
     public void fromByteArray(byte[] paArray) {
 
         // just for make sure it has changes values
@@ -152,6 +137,37 @@ public abstract class CadastralObject {
         }
     }
 
+    @Override
+    public int getSize() {
+        int size = Integer.BYTES; // identityNumber
+        size += COORDINATES_COUNT * GPS.getSize(); // gps coors
+        size += description.length() * Character.BYTES; // desc
+
+        return size;
+    }
+
+    /**
+     * Methods which are also override into inherit classes
+     */
+    public String toString() {
+
+        DecimalFormat df = new DecimalFormat("#.###");
+        return  "id: " + this.identityNumber +
+                ", desc: " + this.description +
+                ", 1. coors: lat: " + this.gpsCoordinates[0].stringMapLatitudeName() +
+                ", pos: " + df.format(this.gpsCoordinates[0].getLatitudePosition()) +
+                ", long: " + this.gpsCoordinates[0].stringMapLongitudeName() +
+                ", pos: " + df.format(this.gpsCoordinates[0].getLongitudePosition()) +
+                ", 2. coors: lat: " + this.gpsCoordinates[1].stringMapLatitudeName() +
+                ", pos: " + df.format(this.gpsCoordinates[1].getLatitudePosition()) +
+                ", long: " + this.gpsCoordinates[1].stringMapLongitudeName() +
+                ", pos: " + df.format(this.gpsCoordinates[1].getLongitudePosition());
+    }
+
+    /**
+     * method just for control if method FromByteArray is correct. Could be also used for
+     * make every attribute of class null, or zero...
+     */
     protected void makeEverythingNull() {
         this.identityNumber = 0;
         this.description = "";
@@ -163,4 +179,17 @@ public abstract class CadastralObject {
         }
     }
 
+    /**
+     * Return String representation of getHash method. Returns
+     * string of 0 and 1 for the purpose of processing it into trie.
+     */
+    public String returnBitSetString() {
+        BitSet hash = this.getHash();
+        StringBuilder sb = new StringBuilder(hash.length());
+
+        for (int i = 0; i < hash.length(); i++) {
+            sb.append(hash.get(i) ? '1' : '0');
+        }
+        return sb.toString();
+    }
 }

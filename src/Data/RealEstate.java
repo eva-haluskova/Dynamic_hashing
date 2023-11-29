@@ -3,6 +3,8 @@ package Data;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.BitSet;
+import java.util.Objects;
 
 /**
  * This class extends cadastral object abstract class. Contains added data specific for this class.
@@ -29,6 +31,9 @@ public class RealEstate extends CadastralObject {
         }
     }
 
+    /**
+     * We can also create land parcel from byte array
+     */
     public RealEstate(
             byte[] parSerializedObject
     ) {
@@ -37,6 +42,9 @@ public class RealEstate extends CadastralObject {
         this.fromByteArray(parSerializedObject);
     }
 
+    /**
+     * Overrode method from parent abstract class
+     */
     @Override
     public TypeOfCadastralObject isInstanceOf() {
         return TypeOfCadastralObject.REAL_ESTATE;
@@ -81,6 +89,46 @@ public class RealEstate extends CadastralObject {
                 super.toString() + " " + idesOfRealEstates;
     }
 
+    @Override
+    public void makeEverythingNull() {
+        super.makeEverythingNull();
+        this.serialNumber = 0;
+        for (int i = 0; i < MAX_COUNT_OF_PARCELS; i++) {
+            this.belongingLandParcels[i] = -1;
+        }
+    }
+
+    /**
+     * Overrode methods from implemented interface
+     */
+    @Override
+    public boolean areEqual(Object parOtherObject) {
+        if (parOtherObject == null || getClass() != parOtherObject.getClass() ) {
+            return false;
+        }
+
+        RealEstate other = (RealEstate) parOtherObject;
+
+        return this.getIdentityNumber() == other.getIdentityNumber();
+    }
+
+    @Override
+    public int getSize() {
+        int size = super.getSize();
+        size += MAX_COUNT_OF_PARCELS * Integer.BYTES; // belonging parcels
+        size +=  Integer.BYTES; // for serial number
+        return size;
+    }
+
+    @Override
+    public BitSet getHash() {
+        int hashCode = Objects.hash(this.identityNumber,this.description, this.serialNumber);
+        return BitSet.valueOf(new long[] {hashCode});
+    }
+
+    /**
+     * Getters and setters of attributes
+     */
     public int getSerialNumber() {
         return serialNumber;
     }
@@ -102,11 +150,4 @@ public class RealEstate extends CadastralObject {
         }
     }
 
-    public void makeEverythingNull() {
-        super.makeEverythingNull();
-        this.serialNumber = 0;
-        for (int i = 0; i < MAX_COUNT_OF_PARCELS; i++) {
-            this.belongingLandParcels[i] = -1;
-        }
-    }
 }

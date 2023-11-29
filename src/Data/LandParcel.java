@@ -1,6 +1,8 @@
 package Data;
 
 import java.io.*;
+import java.util.BitSet;
+import java.util.Objects;
 
 /**
  * This class extends cadastral object abstract class. Contains added data specific for this class.
@@ -24,6 +26,9 @@ public class LandParcel extends CadastralObject {
         }
     }
 
+    /**
+     * We can also create land parcel from byte array
+     */
     public LandParcel(
             byte[] parSerializedObject
     ) {
@@ -32,6 +37,9 @@ public class LandParcel extends CadastralObject {
         this.fromByteArray(parSerializedObject);
     }
 
+    /**
+     * Overrode method from parent abstract class
+     */
     @Override
     public TypeOfCadastralObject isInstanceOf() {
         return TypeOfCadastralObject.LAND_PARCEL;
@@ -70,6 +78,44 @@ public class LandParcel extends CadastralObject {
         return "Land Parcel: " + super.toString() + " " + idesOfRealEstates;
     }
 
+    @Override
+    public void makeEverythingNull() {
+        super.makeEverythingNull();
+        for (int i = 0; i < MAX_COUNT_OF_ESTATES; i++) {
+            this.belongingRealEstates[i] = -1;
+        }
+    }
+
+    /**
+     * Overrode methods from implemented interface
+     */
+    @Override
+    public boolean areEqual(Object parOtherObject) {
+        if (parOtherObject == null || getClass() != parOtherObject.getClass() ) {
+            return false;
+        }
+
+        LandParcel other = (LandParcel) parOtherObject;
+
+        return this.getIdentityNumber() == other.getIdentityNumber();
+    }
+
+    @Override
+    public int getSize() {
+        int size = super.getSize();
+        size += MAX_COUNT_OF_ESTATES * Integer.BYTES; // array of belonging estates
+        return size;
+    }
+
+    @Override
+    public BitSet getHash() {
+        int hashCode = Objects.hash(this.identityNumber,this.description);
+        return BitSet.valueOf(new long[] {hashCode});
+    }
+
+    /**
+     * Getters and setters of attributes
+     */
     public int[] getBelongingRealEstates() {
         return this.belongingRealEstates;
     }
@@ -80,13 +126,6 @@ public class LandParcel extends CadastralObject {
                 this.belongingRealEstates[i] = parIdentityNumber;
                 break;
             }
-        }
-    }
-
-    public void makeEverythingNull() {
-        super.makeEverythingNull();
-        for (int i = 0; i < MAX_COUNT_OF_ESTATES; i++) {
-            this.belongingRealEstates[i] = -1;
         }
     }
 

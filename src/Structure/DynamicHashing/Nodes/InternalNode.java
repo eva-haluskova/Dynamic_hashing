@@ -1,4 +1,8 @@
-package Structure;
+package Structure.DynamicHashing.Nodes;
+
+/**
+ * Represents internal node which contain just attributes of pointers of sons.
+ */
 
 public class InternalNode extends Node {
 

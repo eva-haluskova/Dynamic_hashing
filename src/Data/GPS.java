@@ -23,6 +23,9 @@ public class GPS {
     private double latitudePosition;
     private double longitudePosition;
 
+    /**
+     * constructor for creating new gps from double values and! Latitude and Longitude enum representation.
+     */
     public GPS (
             Latitude parLatitude,
             double parLatitudePosition,
@@ -35,6 +38,9 @@ public class GPS {
         this.longitudePosition = parLongitudePosition;
     }
 
+    /**
+     * constructor for creating new gps from double values and string representation of latitude and longitude.
+     */
     public GPS (
             String parLatitude,
             double parLatitudePosition,
@@ -47,6 +53,9 @@ public class GPS {
         this.longitudePosition = parLongitudePosition;
     }
 
+    /**
+     * constructor just for creating new gps, new instance will have default values.
+     */
     public GPS() {
         this("N",0,"W",0);
     }
@@ -71,7 +80,7 @@ public class GPS {
     }
 
     public void setLatitude(String parLatitude) {
-        if (parLatitude.equals("N")) {
+        if (parLatitude.equals("N") || parLatitude.equals("North") || parLatitude.equals("north")) {
             this.latitude = Latitude.NORTH;
         } else {
             this.latitude = Latitude.SOUTH;
@@ -79,7 +88,7 @@ public class GPS {
     }
 
     public void setLongitude(String parLongitude) {
-        if (parLongitude.equals("W")) {
+        if (parLongitude.equals("W") || parLongitude.equals("West") || parLongitude.equals("west")) {
             this.longitude = Longitude.WEST;
         } else {
             this.longitude = Longitude.EAST;
@@ -210,6 +219,9 @@ public class GPS {
     }
 
 
+    /**
+     * Some methods which returns string representations of some class property
+     */
     public String[] returnAsStringArray() {
         // latitude, longitude, latipos, longpos
         String[] s = {this.latitude.toString(),Double.toString(this.latitudePosition), this.longitude.toString()
@@ -233,5 +245,15 @@ public class GPS {
         }
     }
 
+    /**
+     * returns size of object
+     */
+    public static int getSize() {
+        int size =  Integer.BYTES;
+        size += Integer.BYTES; // longitue and latitutude
+        size += Double.BYTES * 2; // positions
+
+        return size;
+    }
 
 }

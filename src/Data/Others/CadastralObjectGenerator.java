@@ -1,10 +1,10 @@
-package Data;
+package Data.Others;
 
 import java.util.ArrayList;
 import java.util.Random;
 
+import Data.*;
 import Data.CadastralObject.TypeOfCadastralObject;
-import Data.MapCoordinates;
 import Structure.QuadTree.Coordinates;
 
 public class CadastralObjectGenerator {

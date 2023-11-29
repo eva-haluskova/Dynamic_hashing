@@ -1,5 +1,6 @@
-package Data;
+package Data.Others;
 
+import Data.GPS;
 import Structure.QuadTree.Coordinates;
 
 /**
