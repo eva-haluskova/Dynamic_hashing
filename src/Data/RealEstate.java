@@ -61,6 +61,13 @@ public class RealEstate extends CadastralObject {
 
     @Override
     public void serializeDetails(DataOutputStream parOutputStream) throws IOException {
+
+        int lengthOfDesc = this.description.length();
+        parOutputStream.writeUTF(this.description);
+        for (int i = 0; i < MAX_LENGTH_OF_ESTATE_DESCRIPTION - lengthOfDesc; i++) {
+            parOutputStream.writeByte(0);
+        }
+
         parOutputStream.writeInt(this.serialNumber);
 
         for (int act: this.belongingLandParcels) {
@@ -70,6 +77,13 @@ public class RealEstate extends CadastralObject {
 
     @Override
     public void deserializeDetails(DataInputStream parInputStream) throws IOException {
+
+        this.description = parInputStream.readUTF();
+        int zeros = MAX_LENGTH_OF_ESTATE_DESCRIPTION - this.description.length();
+        for (int i = 0; i < zeros; i++) {
+            parInputStream.readByte();
+        }
+
         this.serialNumber = parInputStream.readInt();
 
         for (int i = 0; i < MAX_COUNT_OF_PARCELS; i++) {
@@ -115,6 +129,7 @@ public class RealEstate extends CadastralObject {
     @Override
     public int getSize() {
         int size = super.getSize();
+        size += MAX_LENGTH_OF_ESTATE_DESCRIPTION * Byte.BYTES + Byte.BYTES * 2; // desc + dva bajty za writeUtf
         size += MAX_COUNT_OF_PARCELS * Integer.BYTES; // belonging parcels
         size +=  Integer.BYTES; // for serial number
         return size;

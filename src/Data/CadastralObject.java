@@ -87,12 +87,11 @@ public abstract class CadastralObject implements IRecord {
 
         try {
             hlpOutStream.writeInt(this.identityNumber);
-            hlpOutStream.writeUTF(this.description);
 
             for (int i = 0; i < COORDINATES_COUNT; i++) {
-                hlpOutStream.writeUTF(this.gpsCoordinates[i].stringMapLongitudeName());
+                hlpOutStream.writeChar(this.gpsCoordinates[i].stringMapLongitudeName().charAt(0));
                 hlpOutStream.writeDouble(this.gpsCoordinates[i].getLongitudePosition());
-                hlpOutStream.writeUTF(this.gpsCoordinates[i].stringMapLatitudeName());
+                hlpOutStream.writeChar(this.gpsCoordinates[i].stringMapLatitudeName().charAt(0));
                 hlpOutStream.writeDouble(this.gpsCoordinates[i].getLatitudePosition());
             }
 
@@ -119,12 +118,11 @@ public abstract class CadastralObject implements IRecord {
         try {
 
             this.identityNumber = hlpInStream.readInt();
-            this.description = hlpInStream.readUTF();
 
             for (int i = 0; i < COORDINATES_COUNT; i++) {
-                this.gpsCoordinates[i].setLongitude(hlpInStream.readUTF());
+                this.gpsCoordinates[i].setLongitude(String.valueOf(hlpInStream.readChar()));
                 this.gpsCoordinates[i].setLongitudePosition(hlpInStream.readDouble());
-                this.gpsCoordinates[i].setLatitude(hlpInStream.readUTF());
+                this.gpsCoordinates[i].setLatitude(String.valueOf(hlpInStream.readChar()));
                 this.gpsCoordinates[i].setLatitudePosition(hlpInStream.readDouble());
             }
 
@@ -141,8 +139,6 @@ public abstract class CadastralObject implements IRecord {
     public int getSize() {
         int size = Integer.BYTES; // identityNumber
         size += COORDINATES_COUNT * GPS.getSize(); // gps coors
-        size += description.length() * Character.BYTES; // desc
-
         return size;
     }
 

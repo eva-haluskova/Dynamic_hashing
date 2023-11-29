@@ -56,6 +56,13 @@ public class LandParcel extends CadastralObject {
 
     @Override
     public void serializeDetails(DataOutputStream parOutputStream) throws IOException {
+
+        int lengthOfDesc = this.description.length();
+        parOutputStream.writeUTF(this.description);
+        for (int i = 0; i < MAX_LENGTH_OF_PARCEL_DESCRIPTION - lengthOfDesc; i++) {
+            parOutputStream.writeByte(0);
+        }
+
         for (int act: this.belongingRealEstates) {
             parOutputStream.writeInt(act);
         }
@@ -63,6 +70,13 @@ public class LandParcel extends CadastralObject {
 
     @Override
     public void deserializeDetails(DataInputStream parInputStream) throws IOException {
+
+        this.description = parInputStream.readUTF();
+        int zeros = MAX_LENGTH_OF_PARCEL_DESCRIPTION - this.description.length();
+        for (int i = 0; i < zeros; i++) {
+            parInputStream.readByte();
+        }
+
         for (int i = 0; i < MAX_COUNT_OF_ESTATES; i++) {
             this.belongingRealEstates[i] = parInputStream.readInt();
         }
@@ -103,6 +117,7 @@ public class LandParcel extends CadastralObject {
     @Override
     public int getSize() {
         int size = super.getSize();
+        size += MAX_LENGTH_OF_PARCEL_DESCRIPTION * Byte.BYTES + Byte.BYTES * 2; // desc
         size += MAX_COUNT_OF_ESTATES * Integer.BYTES; // array of belonging estates
         return size;
     }

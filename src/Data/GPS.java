@@ -249,8 +249,7 @@ public class GPS {
      * returns size of object
      */
     public static int getSize() {
-        int size =  Integer.BYTES;
-        size += Integer.BYTES; // longitue and latitutude
+        int size =  Character.BYTES * 2; // longitue and latitutude
         size += Double.BYTES * 2; // positions
 
         return size;
