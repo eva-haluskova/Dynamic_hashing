@@ -1,6 +1,7 @@
 package Structure.DynamicHashing;
 
 import java.io.*;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
 
@@ -67,7 +68,22 @@ public class Block<T extends IRecord> {
         }
     }
 
-    public void fromByteArray(byte[] parData) throws IllegalAccessException, InstantiationException {
+    public void writeToFile(int parAddress) {
+        byte[] blockData = this.toByteArray();
+        try {
+            RandomAccessFile file = new RandomAccessFile("file.bin", "rw");
+            file.seek(this.getSize() * parAddress);
+
+            file.write(blockData);
+            file.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        this.fromByteArray(blockData);
+    }
+
+    public void fromByteArray(byte[] parData) {
         this.makeBlockNull();
 
         byte[] header = Arrays.copyOfRange(parData, 0, this.getSizeOfHeader());
@@ -87,16 +103,40 @@ public class Block<T extends IRecord> {
 
         for (int i = 0; i < numberOfReadRecords * this.sizeOfRecord; i += this.sizeOfRecord) {
             byte[] recordBytes = getSubArray(records, i, this.sizeOfRecord);
-            T record = type.newInstance();
-            if (record instanceof IRecord) {
-                this.insertRecord(record);
-                ((IRecord) record).createObjectFromBytes(recordBytes);
-            }
+            this.createRecord(recordBytes);
         }
     }
 
-    public void fromFileToBlock() {
+    private boolean createRecord(byte[] parRecordBytes) {
+        try {
+            T record = type.newInstance();
+            if (record instanceof IRecord) {
+                this.insertRecord(record);
+                ((IRecord) record).createObjectFromBytes(parRecordBytes);
+                return true;
+            } else {
+                return false;
+            }
+        } catch (InstantiationException | IllegalAccessException e) {
+            e.printStackTrace(); // Handle the exception as needed (print stack trace or log)
+            return false; // Return false in case of exception
+        }
+    }
 
+
+    public void fromFileToBlock(int parAddress) {
+        byte[] blockData = new byte[this.getSize()];
+        try {
+            RandomAccessFile file = new RandomAccessFile("file.bin", "rw");
+            file.seek(this.getSize() * parAddress);
+
+            file.read(blockData);
+            file.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        this.fromByteArray(blockData);
     }
 
     public boolean insertRecord(IRecord parRecord) {
@@ -110,7 +150,29 @@ public class Block<T extends IRecord> {
     }
 
     public IRecord findRecord(IRecord record) {
+        for (int i = 0; i < this.countOfValidRecords; i++) {
+            if (this.listOfRecords[i].equals(record)) {
+                return this.listOfRecords[i];
+            }
+        }
         return null;
+    }
+
+    public IRecord[] returnRecords() {
+        return this.listOfRecords;
+    }
+
+    public IRecord[] returnValidRecords() {
+        IRecord[] validRec = Arrays.copyOfRange(this.listOfRecords,0,this.countOfValidRecords);
+        return validRec;
+    }
+
+    public ArrayList<IRecord> returnValidRecordsAsArray() {
+        ArrayList<IRecord> dataToReturn = new ArrayList<>();
+        for (int i = 0; i < this.countOfValidRecords; i++) {
+            dataToReturn.add(this.listOfRecords[i]);
+        }
+        return dataToReturn;
     }
 
     private byte[] appendByteArrays(byte[] array1, byte[] array2) {

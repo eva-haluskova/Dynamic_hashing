@@ -11,6 +11,7 @@ public class ExternalNode extends Node {
 
     public ExternalNode(Node parParent) {
         this.parent = parParent;
+        this.address = -1;
     }
 
     public int getAddress() {
@@ -27,5 +28,18 @@ public class ExternalNode extends Node {
 
     public void setCountOnAddress(int parCountOnAddress) {
         this.countOnAddress = parCountOnAddress;
+    }
+
+    public void increaseCountOnAddress() {
+        this.countOnAddress++;
+    }
+
+    public void decreaseCountOnAddress() {
+        this.countOnAddress--;
+    }
+
+    @Override
+    public TypeOfNode isInstanceOf() {
+        return TypeOfNode.EXTERNAL;
     }
 }

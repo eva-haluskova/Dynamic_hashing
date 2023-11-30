@@ -8,7 +8,7 @@ import java.util.BitSet;
  */
 public interface IRecord {
 
-    boolean areEqual(Object parAnotherObject);
+    boolean equals(Object parAnotherObject);
     BitSet getHash();
     int getSize();
     byte[] toByteArray();

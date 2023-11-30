@@ -109,7 +109,7 @@ public class LandParcel extends CadastralObject {
      * Overrode methods from implemented interface
      */
     @Override
-    public boolean areEqual(Object parOtherObject) {
+    public boolean equals(Object parOtherObject) {
         if (parOtherObject == null || getClass() != parOtherObject.getClass() ) {
             return false;
         }
@@ -118,7 +118,7 @@ public class LandParcel extends CadastralObject {
 
         return this.getIdentityNumber() == other.getIdentityNumber();
     }
-
+    
     @Override
     public int getSize() {
         int size = super.getSize();

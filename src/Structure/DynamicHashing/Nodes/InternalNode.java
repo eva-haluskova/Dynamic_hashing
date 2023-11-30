@@ -7,7 +7,7 @@ package Structure.DynamicHashing.Nodes;
 public class InternalNode extends Node {
 
     private Node leftSon;
-    private Node rightNode;
+    private Node rightSon;
 
     public InternalNode(Node parParent) {
         this.parent = parParent;
@@ -21,11 +21,16 @@ public class InternalNode extends Node {
         this.leftSon = parLeftSon;
     }
 
-    public Node getRightNode() {
-        return rightNode;
+    public Node getRightSon() {
+        return rightSon;
     }
 
-    public void setRightNode(Node parRightNode) {
-        this.rightNode = parRightNode;
+    public void setRightSon(Node parRightNode) {
+        this.rightSon = parRightNode;
+    }
+
+    @Override
+    public TypeOfNode isInstanceOf() {
+        return TypeOfNode.INTERNAL;
     }
 }

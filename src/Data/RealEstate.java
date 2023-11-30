@@ -121,7 +121,7 @@ public class RealEstate extends CadastralObject {
      * Overrode methods from implemented interface
      */
     @Override
-    public boolean areEqual(Object parOtherObject) {
+    public boolean equals(Object parOtherObject) {
         if (parOtherObject == null || getClass() != parOtherObject.getClass() ) {
             return false;
         }
