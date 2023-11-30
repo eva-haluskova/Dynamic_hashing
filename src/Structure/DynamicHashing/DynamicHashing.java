@@ -21,6 +21,8 @@ public class DynamicHashing<T extends IRecord> {
     private int blockFactor;
     private int nextEmptyBlock;
 
+    ArrayList<Integer> freeBlocks;
+
     private Class<T> type;
 
     public DynamicHashing(int parBlockFactor, Class<T> type) {
@@ -35,6 +37,7 @@ public class DynamicHashing<T extends IRecord> {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        this.freeBlocks = new ArrayList<>();
     }
 
     public IRecord find(IRecord parIRecord) {
@@ -62,18 +65,16 @@ public class DynamicHashing<T extends IRecord> {
         return record;
     }
 
-    public IRecord findInAll(IRecord parIRecord) {
-        BitSet traverBitset = parIRecord.getHash();
-        IRecord record = null;
-
-        ArrayList<IRecord> list = this.returnAllRecords();
-        for (int i = 0; i < list.size(); i++) {
-            if (list.get(i).equals(parIRecord)) {
-                return list.get(i);
-            }
-        }
-        return null;
-    }
+//    public IRecord findInAll(IRecord parIRecord) {
+//
+//        ArrayList<IRecord> list = this.returnAllRecords();
+//        for (int i = 0; i < list.size(); i++) {
+//            if (list.get(i).equals(parIRecord)) {
+//                return list.get(i);
+//            }
+//        }
+//        return null;
+//    }
 
     public IRecord findRecord(IRecord parDataToFind, int parAddressToSeek) {
         Block<T> block = new Block<>(this.blockFactor, type);
@@ -99,7 +100,7 @@ public class DynamicHashing<T extends IRecord> {
             }
         }
 
-        if (this.findInAll(parDataToInsert) != null) {
+        if (this.find(parDataToInsert) != null) {
             return false;
         }
 
@@ -122,9 +123,8 @@ public class DynamicHashing<T extends IRecord> {
             } else  {
                 // ak v nom neexituje odkaz na adresu - alokujem miesto na blok,vlozim dato.
                 if (((ExternalNode) current).getAddress() == -1) {
-                    ((ExternalNode) current).setAddress(this.nextEmptyBlock);
-                    this.nextEmptyBlock++;
-
+                        ((ExternalNode) current).setAddress(this.nextEmptyBlock);
+                        this.nextEmptyBlock++;
                     if (insertRecord(parDataToInsert,((ExternalNode) current).getAddress())) {
                         ((ExternalNode) current).increaseCountOnAddress();
                         return true;
@@ -166,6 +166,10 @@ public class DynamicHashing<T extends IRecord> {
                             this.root = newIntNode;
                         }
 
+                        if (((ExternalNode) current).getAddress() != -1) {
+                            this.freeBlocks.add(((ExternalNode) current).getAddress());
+                        }
+
                         newExtNode.setAddress(this.nextEmptyBlock);
                         this.nextEmptyBlock++;
                         newExtNodeTwo.setAddress(this.nextEmptyBlock);
@@ -174,7 +178,6 @@ public class DynamicHashing<T extends IRecord> {
                         Iterator<IRecord> iterator = dataToInsert.iterator();
                         while (iterator.hasNext()) {
                             IRecord record = iterator.next();
-                            // iterator.remove()
                             if (!record.getHash().get(index)) {
                                 if (this.insertRecord(record,newExtNode.getAddress())) {
                                     newExtNode.increaseCountOnAddress();
@@ -190,24 +193,27 @@ public class DynamicHashing<T extends IRecord> {
 
                         index++;
 
-                        //  toto by malo byt v e;se if, pretoze ak ti tu vynde 0 znamneta to ze hento iso nebudu nuly
-                        // eva uz si to literally osetrila
                         if (!dataToInsert.isEmpty()) {
                             if (newExtNode.getCountOnAddress() == 0) {
+                                if (newExtNode.getAddress() != -1) {
+                                    this.freeBlocks.add(((ExternalNode) newExtNode).getAddress());
+                                }
                                 newExtNode.setAddress(-1);
-                                //this.nextEmptyBlock--;
                                 current = newExtNodeTwo;
                             } else {
                                 // TODO tu musis dorobit metodku taku, teda prekopat to, ze mas iba vytvoreny blok aa do neho vkldas data, nie aj zapiseuje, zapises to az potom naraz
                             }
                             if (newExtNodeTwo.getCountOnAddress() == 0) {
+                                if (newExtNode.getAddress() != -1) {
+                                    this.freeBlocks.add(((ExternalNode) newExtNodeTwo).getAddress());
+                                }
                                 newExtNodeTwo.setAddress(-1);
-                                this.nextEmptyBlock--;
                                 current = newExtNode;
                             }
                         } else {
                             isInserted = true;
                         }
+
                     }
                     return true;
                 }
@@ -237,35 +243,11 @@ public class DynamicHashing<T extends IRecord> {
     public ArrayList<IRecord> returnAllRecords() {
         ArrayList<IRecord> dataToReturn = new ArrayList<>();
         for (int i = 0; i < this.nextEmptyBlock; i++) {
-            dataToReturn.addAll(returnDataFromBlock(i));
+            if (!this.freeBlocks.contains(i)) {
+                dataToReturn.addAll(returnDataFromBlock(i));
+            }
         }
         return dataToReturn;
     }
 
 }
-
-
-
-
-//     if (this.root == null) {
-//             ExternalNode node = new ExternalNode(null);
-//             this.root = node;
-//             ((ExternalNode) this.root).setAddress(this.nextEmptyBlock);
-//             this.nextEmptyBlock++;
-//             return true;
-//             }
-//
-//             Node current = this.root;
-//
-//
-//
-//             if (this.root.isInstanceOf() == Node.TypeOfNode.EXTERNAL) {
-//             if (((ExternalNode) this.root).getCountOnAddress() < this.blockFactor) {
-//        int addressToSeek = ((ExternalNode) this.root).getAddress();
-//        Block<T> block = new Block<>(this.blockFactor, type);
-//        block.fromFileToBlock(addressToSeek);
-//        block.insertRecord(parDataToInsert);
-//        ((ExternalNode) this.root).increaseCountOnAddress();
-//        return true;
-//        }
-//        }

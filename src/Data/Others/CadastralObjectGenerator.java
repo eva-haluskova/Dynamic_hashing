@@ -13,8 +13,9 @@ public class CadastralObjectGenerator {
     private int realEstateId;
     private int landParcelId;
 
-    public CadastralObjectGenerator() {
+    public CadastralObjectGenerator(int seed) {
         this.random = new Random();
+        this.random.setSeed(seed);
     }
 
     public ArrayList<CadastralObject> generateObjects(

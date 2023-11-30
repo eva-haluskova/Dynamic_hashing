@@ -1,5 +1,7 @@
 package Data;
 
+import Structure.DynamicHashing.IRecord;
+
 import java.io.*;
 import java.util.BitSet;
 import java.util.Objects;
@@ -118,7 +120,7 @@ public class LandParcel extends CadastralObject {
 
         return this.getIdentityNumber() == other.getIdentityNumber();
     }
-    
+
     @Override
     public int getSize() {
         int size = super.getSize();
@@ -134,7 +136,7 @@ public class LandParcel extends CadastralObject {
 
     @Override
     public BitSet getHash() {
-        int hashCode = Objects.hash(this.identityNumber,this.description);
+        int hashCode = Objects.hash(this.identityNumber);
         return BitSet.valueOf(new long[] {hashCode});
     }
 

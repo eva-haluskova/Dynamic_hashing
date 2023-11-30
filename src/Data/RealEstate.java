@@ -1,5 +1,7 @@
 package Data;
 
+import Structure.DynamicHashing.IRecord;
+
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -147,7 +149,7 @@ public class RealEstate extends CadastralObject {
 
     @Override
     public BitSet getHash() {
-        int hashCode = Objects.hash(this.identityNumber,this.description, this.serialNumber);
+        int hashCode = Objects.hash(this.identityNumber);
         return BitSet.valueOf(new long[] {hashCode});
     }
 
