@@ -7,6 +7,7 @@ import Structure.DynamicHashing.Nodes.Node;
 import Structure.QuadTree.Coordinates;
 import Structure.QuadTree.Data;
 import Structure.QuadTree.QuadTreeNode;
+import org.w3c.dom.ls.LSOutput;
 
 import java.io.IOException;
 import java.io.RandomAccessFile;

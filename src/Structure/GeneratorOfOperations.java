@@ -28,9 +28,9 @@ public abstract class GeneratorOfOperations<T extends IRecord> {
 
     public boolean findAllInserted() {
 
-        for (int i = 0; i < this.insertedRecords.size(); i++) {
-            System.out.println(this.insertedRecords.get(i));
-        }
+//        for (int i = 0; i < this.insertedRecords.size(); i++) {
+//            System.out.println(this.insertedRecords.get(i));
+//        }
 
         ArrayList<IRecord> foundArray = new ArrayList<>();
         for (IRecord act : this.insertedRecords) {
@@ -41,16 +41,12 @@ public abstract class GeneratorOfOperations<T extends IRecord> {
             }
         }
 
-
-
-        System.out.println("nic tu nie je :(");
-
-        for (int i = 0; i < foundArray.size(); i++) {
-            System.out.println(foundArray.get(i));
-        }
+//        for (int i = 0; i < foundArray.size(); i++) {
+//            System.out.println(foundArray.get(i));
+//        }
 
         if (foundArray.containsAll(this.insertedRecords) && foundArray.size() == this.insertedRecords.size()) {
-            System.out.println("Find was success!!");
+            System.out.println("Find of all items was success!!");
             return true;
         } else {
             System.out.println("Find failed! :(");
