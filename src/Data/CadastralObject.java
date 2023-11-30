@@ -43,6 +43,11 @@ public abstract class CadastralObject implements IRecord {
         this.gpsCoordinates = gps;
     }
 
+    public CadastralObject() {
+        GPS[] gps = {new GPS(),new GPS()};
+        this.gpsCoordinates = gps;
+    }
+
     /**
      * Abstract methods for overriding
      */
@@ -108,9 +113,9 @@ public abstract class CadastralObject implements IRecord {
 
         // just for make sure it has changes values
         this.makeEverythingNull();
-        if (this.description != null) {
-            System.out.println(this);
-        }
+//        if (this.description != null) {
+//            System.out.println(this);
+//        }
 
         ByteArrayInputStream hlpByteArrayInputStream = new ByteArrayInputStream(paArray);
         DataInputStream hlpInStream = new DataInputStream(hlpByteArrayInputStream);
@@ -128,7 +133,7 @@ public abstract class CadastralObject implements IRecord {
 
             this.deserializeDetails(hlpInStream);
 
-            System.out.println(this);
+//            System.out.println(this);
 
         } catch (IOException e) {
             throw new IllegalStateException("Error during conversion from byte array.");

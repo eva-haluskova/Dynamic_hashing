@@ -42,6 +42,11 @@ public class RealEstate extends CadastralObject {
         this.fromByteArray(parSerializedObject);
     }
 
+    public RealEstate() {
+        super();
+        this.belongingLandParcels = new int[MAX_COUNT_OF_PARCELS];
+    }
+
     /**
      * Overrode method from parent abstract class
      */
@@ -133,6 +138,11 @@ public class RealEstate extends CadastralObject {
         size += MAX_COUNT_OF_PARCELS * Integer.BYTES; // belonging parcels
         size +=  Integer.BYTES; // for serial number
         return size;
+    }
+
+    @Override
+    public void createObjectFromBytes(byte[] parData) {
+        this.fromByteArray(parData);
     }
 
     @Override

@@ -13,5 +13,8 @@ public interface IRecord {
     int getSize();
     byte[] toByteArray();
     void fromByteArray(byte[] parData);
+    void createObjectFromBytes(byte[] parData);
+
+    //T getInstanceOf();
 
 }
