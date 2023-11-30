@@ -61,6 +61,18 @@ public class DynamicHashing<T extends IRecord> {
         return record;
     }
 
+    public IRecord findInAll(IRecord parIRecord) {
+        BitSet traverBitset = parIRecord.getHash();
+        IRecord record = null;
+
+        ArrayList<IRecord> list = this.returnAllRecords();
+        for (int i = 0; i < list.size(); i++) {
+            if (list.get(i).equals(parIRecord)) {
+                return list.get(i);
+            }
+        }
+        return null;
+    }
 
     public IRecord findRecord(IRecord parDataToFind, int parAddressToSeek) {
         Block<T> block = new Block<>(this.blockFactor, type);
@@ -86,7 +98,7 @@ public class DynamicHashing<T extends IRecord> {
             }
         }
 
-        if (this.find(parDataToInsert) != null) {
+        if (this.findInAll(parDataToInsert) != null) {
             return false;
         }
 

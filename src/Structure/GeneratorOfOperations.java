@@ -19,7 +19,7 @@ public abstract class GeneratorOfOperations<T extends IRecord> {
     public abstract void insert(int count);
 
     public IRecord find(IRecord parRecord) {
-        IRecord foundRecord = this.dynamicHashing.find(parRecord);
+        IRecord foundRecord = this.dynamicHashing.findInAll(parRecord);
         if (foundRecord != null) {
             return foundRecord;
         }
@@ -34,7 +34,8 @@ public abstract class GeneratorOfOperations<T extends IRecord> {
 
         ArrayList<IRecord> foundArray = new ArrayList<>();
         for (IRecord act : this.insertedRecords) {
-            IRecord foundRecord = this.dynamicHashing.find(act);
+            //IRecord foundRecord = this.dynamicHashing.find(act);
+            IRecord foundRecord = this.dynamicHashing.findInAll(act);
             if (foundRecord != null) {
                 foundArray.add(foundRecord);
             }
@@ -60,7 +61,7 @@ public abstract class GeneratorOfOperations<T extends IRecord> {
     public boolean checkIfTheyAreSme(ArrayList<IRecord> arrayToCompare) {
         ArrayList<IRecord> foundArray = new ArrayList<>();
         for (IRecord act : this.insertedRecords) {
-            IRecord foundRecord = this.dynamicHashing.find(act);
+            IRecord foundRecord = this.dynamicHashing.findInAll(act);
             if (foundRecord != null) {
                 foundArray.add(foundRecord);
             }
