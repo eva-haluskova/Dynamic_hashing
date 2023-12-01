@@ -23,13 +23,19 @@ public class Main {
         GeneratorOfOperationsForLandParcels generatorOfOperations = new GeneratorOfOperationsForLandParcels(dhp);
 
         // ---------- generovanie INSERT -------------
-        generatorOfOperations.insert(1000);
+        generatorOfOperations.insert(50);
 
         // ---------- generovanie FIND --------------
         generatorOfOperations.findAllInserted();
 
         ArrayList<IRecord> inserted = dhp.returnAllRecords();
         generatorOfOperations.checkIfTheyAreSme(inserted);
+
+        // ------- SEKVENCNY VYPIS
+
+//        System.out.println("--------- SEKVENCNY VYPIS -------------");
+//        dhp.returnContent();
+//        System.out.println("--------- KONIEC -----------------");
 
         // --------- skuska funkconosti porovnavania objektov a vkladanie duplicitnych dat
         System.out.println(dhp.insert(parcela5) ? "Vlozila sa mi parcela 5" : "nevlozila sa mi parcela 5");
@@ -45,4 +51,19 @@ public class Main {
     }
 
 }
+
+// TODO musis potestovat pre rozne seedy
+// TODO vies ze nemas poriesene vymazavanie adresy od currenta hahahahaha :D - moze vobec nastat? HAAA?
+// TODO generovanie novych objektv,,vloz jeden - vloz si to aj do dynamichashing
+// TODO a ttiez to generovanie, vloaz iba ak vysledok z insertdynamickhashing je true....ale pi preplnovaku uz asi ani ne...ale ba, keby si chcel vkladat rovnake daticka
+// TODO pracu s filom si daj to dynamickeho heshovania
+// TODO vlozis do zoznamu vlozenych iba to dato co vratilo true ze je vlozene do trie
+
+
+// piatok vecer:
+/*
+- prekopat pracu s filom do dynamic hashing
+- opekniet dynamic hashing a block
+- predstavit si pracu s preplnovakmi
+*/
 
