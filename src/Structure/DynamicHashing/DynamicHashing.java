@@ -67,17 +67,6 @@ public class DynamicHashing<T extends IRecord> {
 //        return null;
 //    }
 
-    public IRecord findRecord(IRecord parDataToFind, int parAddressToSeek) {
-        Block<T> block = new Block<>(this.blockFactor, type);
-        block.fromFileToBlock(parAddressToSeek);
-
-        IRecord recordToReturn = block.findRecord(parDataToFind);
-        if (recordToReturn != null) {
-            return recordToReturn;
-        }
-        return null;
-    }
-
     public boolean insert(IRecord parDataToInsert) {
 
         if (this.root == null) {
@@ -242,6 +231,17 @@ public class DynamicHashing<T extends IRecord> {
         block.fromFileToBlock(parAddressToSeek);
         block.resetCountOfValidRecords();
         block.writeToFile(parAddressToSeek);
+    }
+
+    public IRecord findRecord(IRecord parDataToFind, int parAddressToSeek) {
+        Block<T> block = new Block<>(this.blockFactor, type);
+        block.fromFileToBlock(parAddressToSeek);
+
+        IRecord recordToReturn = block.findRecord(parDataToFind);
+        if (recordToReturn != null) {
+            return recordToReturn;
+        }
+        return null;
     }
 
     public ArrayList<IRecord> returnAllRecords() {
