@@ -3,7 +3,6 @@ package Structure.DynamicHashing;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.BitSet;
 
 public class Block<T extends IRecord> {
 
@@ -118,8 +117,8 @@ public class Block<T extends IRecord> {
                 return false;
             }
         } catch (InstantiationException | IllegalAccessException e) {
-            e.printStackTrace(); // Handle the exception as needed (print stack trace or log)
-            return false; // Return false in case of exception
+            e.printStackTrace();
+            return false;
         }
     }
 
@@ -177,13 +176,8 @@ public class Block<T extends IRecord> {
 
     private byte[] appendByteArrays(byte[] array1, byte[] array2) {
         byte[] result = new byte[array1.length + array2.length];
-
-        // Copy contents of array1 to result
         System.arraycopy(array1, 0, result, 0, array1.length);
-
-        // Copy contents of array2 to result, starting from the end of array1
         System.arraycopy(array2, 0, result, array1.length, array2.length);
-
         return result;
     }
 

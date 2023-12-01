@@ -1,14 +1,8 @@
 package Structure.DynamicHashing;
 
-import Data.LandParcel;
 import Structure.DynamicHashing.Nodes.ExternalNode;
 import Structure.DynamicHashing.Nodes.InternalNode;
 import Structure.DynamicHashing.Nodes.Node;
-import Structure.QuadTree.Coordinates;
-import Structure.QuadTree.Data;
-import Structure.QuadTree.QuadTreeNode;
-import org.w3c.dom.ls.LSOutput;
-
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.ArrayList;
@@ -210,8 +204,6 @@ public class DynamicHashing<T extends IRecord> {
                     return true;
                 }
             }
-
-
         }
     }
 
@@ -223,6 +215,19 @@ public class DynamicHashing<T extends IRecord> {
             return true;
         }
         return false;
+    }
+
+    private boolean insertRecords(ArrayList<IRecord> parDataToInsert, int parAddressToSeek) {
+        Block<T> block = new Block<>(this.blockFactor, type);
+        block.fromFileToBlock(parAddressToSeek);
+        boolean areInserted = true;
+        for (int i = 0; i <parDataToInsert.size(); i++) {
+            if (!block.insertRecord(parDataToInsert.get(i))) {
+                areInserted = false;
+            }
+        }
+        block.writeToFile(parAddressToSeek);
+        return areInserted;
     }
 
 

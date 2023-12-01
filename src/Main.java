@@ -23,7 +23,7 @@ public class Main {
         GeneratorOfOperationsForLandParcels generatorOfOperations = new GeneratorOfOperationsForLandParcels(dhp);
 
         // ---------- generovanie INSERT -------------
-        generatorOfOperations.insert(100);
+        generatorOfOperations.insert(1000);
 
         // ---------- generovanie FIND --------------
         generatorOfOperations.findAllInserted();
