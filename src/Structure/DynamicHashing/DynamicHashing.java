@@ -155,21 +155,30 @@ public class DynamicHashing<T extends IRecord> {
                         newExtNode.setAddress(this.nextEmptyBlock);
                         this.nextEmptyBlock++;
 
+                        Block<T> blockCur = new Block<>(this.blockFactor, type);
+                        blockCur.fromFileToBlock(((ExternalNode)current).getAddress());
+
+                        Block<T> blockNew = new Block<>(this.blockFactor, type);
+                        blockNew.fromFileToBlock(newExtNode.getAddress());
+
                         Iterator<IRecord> iterator = dataToInsert.iterator();
                         while (iterator.hasNext()) {
                             IRecord record = iterator.next();
                             if (!record.getHash().get(index)) {
-                                if (this.insertRecord(record,((ExternalNode)current).getAddress())) {
+                                if (blockCur.insertRecord(record)) {
                                     ((ExternalNode)current).increaseCountOnAddress();
-                                    iterator.remove();
+                                     iterator.remove();
                                 }
                             } else {
-                                if (this.insertRecord(record,newExtNode.getAddress())) {
+                                if (blockNew.insertRecord(record)) {
                                     newExtNode.increaseCountOnAddress();
                                     iterator.remove();
                                 }
                             }
                         }
+
+                        blockCur.writeToFile(((ExternalNode)current).getAddress());
+                        blockNew.writeToFile(newExtNode.getAddress());
 
 
                         index++;
