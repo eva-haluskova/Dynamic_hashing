@@ -20,9 +20,6 @@ public class DynamicHashing<T extends IRecord> {
     private Node root;
     private int blockFactor;
     private int nextEmptyBlock;
-
-    ArrayList<Integer> freeBlocks;
-
     private Class<T> type;
 
     public DynamicHashing(int parBlockFactor, Class<T> type) {
@@ -37,7 +34,7 @@ public class DynamicHashing<T extends IRecord> {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        this.freeBlocks = new ArrayList<>();
+
     }
 
     public IRecord find(IRecord parIRecord) {
@@ -139,19 +136,24 @@ public class DynamicHashing<T extends IRecord> {
                 // ak sa nezmsti dalsie dato, musis rozbijat strom kym sa ti to nepodari:
                 } else {
                     boolean isInserted = false;
+                    ArrayList<IRecord> dataToInsert = new ArrayList<>();
+                    dataToInsert.add(parDataToInsert);
                     while(!isInserted) {
-                        ArrayList<IRecord> dataToInsert = this.returnDataFromBlock(((ExternalNode) current).getAddress());
-                        dataToInsert.add(parDataToInsert);
-                        // nezabudni na akutalne vkladane dato
+                        dataToInsert.addAll(this.returnDataFromBlock(((ExternalNode) current).getAddress()));
+
+                        // v danom bloku su vymazem zaznami, nakolko idem delit
+                        this.deleteAllDataFromBlock(((ExternalNode) current).getAddress());
 
                         // vytvorim si nove nody. Na miesto stareho currena dem dat novy interny ktory ma dvoch synov externych.
                         InternalNode newIntNode = new InternalNode(current.getParent());
                         ExternalNode newExtNode = new ExternalNode(newIntNode);
-                        ExternalNode newExtNodeTwo = new ExternalNode(newIntNode);
+
 
                         // novemu internemu nastavim synov nove externe
-                        newIntNode.setLeftSon(newExtNode);
-                        newIntNode.setRightSon(newExtNodeTwo);
+                        newIntNode.setLeftSon(current);
+                        newIntNode.setRightSon(newExtNode);
+
+
 
                         // nastavujem nove dieta otcovi curren,a to neplati pre root, ten otca nema :)
                         if (!current.equals(this.root)) {
@@ -166,48 +168,38 @@ public class DynamicHashing<T extends IRecord> {
                             this.root = newIntNode;
                         }
 
-                        if (((ExternalNode) current).getAddress() != -1) {
-                            this.freeBlocks.add(((ExternalNode) current).getAddress());
-                        }
-
+                        current.setParent(newIntNode);
                         newExtNode.setAddress(this.nextEmptyBlock);
-                        this.nextEmptyBlock++;
-                        newExtNodeTwo.setAddress(this.nextEmptyBlock);
                         this.nextEmptyBlock++;
 
                         Iterator<IRecord> iterator = dataToInsert.iterator();
                         while (iterator.hasNext()) {
                             IRecord record = iterator.next();
                             if (!record.getHash().get(index)) {
-                                if (this.insertRecord(record,newExtNode.getAddress())) {
-                                    newExtNode.increaseCountOnAddress();
+                                if (this.insertRecord(record,((ExternalNode)current).getAddress())) {
+                                    ((ExternalNode)current).increaseCountOnAddress();
                                     iterator.remove();
                                 }
                             } else {
-                                if (this.insertRecord(record,newExtNodeTwo.getAddress())) {
-                                    newExtNodeTwo.increaseCountOnAddress();
+                                if (this.insertRecord(record,newExtNode.getAddress())) {
+                                    newExtNode.increaseCountOnAddress();
                                     iterator.remove();
                                 }
                             }
                         }
 
+
                         index++;
 
                         if (!dataToInsert.isEmpty()) {
                             if (newExtNode.getCountOnAddress() == 0) {
-                                if (newExtNode.getAddress() != -1) {
-                                    this.freeBlocks.add(((ExternalNode) newExtNode).getAddress());
-                                }
+
+                                this.nextEmptyBlock--;
                                 newExtNode.setAddress(-1);
-                                current = newExtNodeTwo;
-                            } else {
-                                // TODO tu musis dorobit metodku taku, teda prekopat to, ze mas iba vytvoreny blok aa do neho vkldas data, nie aj zapiseuje, zapises to az potom naraz
                             }
-                            if (newExtNodeTwo.getCountOnAddress() == 0) {
-                                if (newExtNode.getAddress() != -1) {
-                                    this.freeBlocks.add(((ExternalNode) newExtNodeTwo).getAddress());
-                                }
-                                newExtNodeTwo.setAddress(-1);
+                            if (((ExternalNode) current).getCountOnAddress() == 0) {
+
+                                ((ExternalNode) current).setAddress(-1);
                                 current = newExtNode;
                             }
                         } else {
@@ -240,12 +232,17 @@ public class DynamicHashing<T extends IRecord> {
         return block.returnValidRecordsAsArray();
     }
 
+    private void deleteAllDataFromBlock(int parAddressToSeek) {
+        Block<T> block = new Block<>(this.blockFactor, type);
+        block.fromFileToBlock(parAddressToSeek);
+        block.resetCountOfValidRecords();
+        block.writeToFile(parAddressToSeek);
+    }
+
     public ArrayList<IRecord> returnAllRecords() {
         ArrayList<IRecord> dataToReturn = new ArrayList<>();
         for (int i = 0; i < this.nextEmptyBlock; i++) {
-            if (!this.freeBlocks.contains(i)) {
-                dataToReturn.addAll(returnDataFromBlock(i));
-            }
+            dataToReturn.addAll(returnDataFromBlock(i));
         }
         return dataToReturn;
     }

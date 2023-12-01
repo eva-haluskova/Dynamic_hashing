@@ -28,6 +28,7 @@ public abstract class GeneratorOfOperations<T extends IRecord> {
 
     public boolean findAllInserted() {
 
+//        System.out.println("Vsetky data ktore som inzertovala: ");
 //        for (int i = 0; i < this.insertedRecords.size(); i++) {
 //            System.out.println(this.insertedRecords.get(i));
 //        }
@@ -40,6 +41,7 @@ public abstract class GeneratorOfOperations<T extends IRecord> {
             }
         }
 
+//        System.out.println("Vsetky data ktore som nasla podla findu v trie: ");
 //        for (int i = 0; i < foundArray.size(); i++) {
 //            System.out.println(foundArray.get(i));
 //        }
@@ -61,6 +63,12 @@ public abstract class GeneratorOfOperations<T extends IRecord> {
                 foundArray.add(foundRecord);
             }
         }
+
+//        System.out.println("Vrati setky data z trie");
+//        for (int i = 0; i < arrayToCompare.size(); i++) {
+//            System.out.println(arrayToCompare.get(i));
+//        };
+
         if (foundArray.containsAll(arrayToCompare) && foundArray.size() == arrayToCompare.size()) {
             System.out.println("They are same!!");
             return true;

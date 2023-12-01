@@ -46,7 +46,7 @@ public class CadastralObjectGenerator {
     ) {
         //int pocetLeziacichParciel = Math.min(random.nextInt(this.landParcelId + 1),5);
         int pocetLeziacichParciel = random.nextInt(5);
-        LandParcel sa = new LandParcel(this.landParcelId, this.returnGPSOfObject(parSizeOfObject,parRangeOfGPS),"Land_Parcel_" + this.landParcelId);
+        LandParcel sa = new LandParcel(this.landParcelId, this.returnGPSOfObject(parSizeOfObject,parRangeOfGPS),"LP_" + this.landParcelId);
         // TODO ja viem ze je to zatial zle, toto je zatila ozaj len na otestovanie tvorby
         for (int i = 0; i < pocetLeziacichParciel; i++) {
             sa.addBelongingRealEstate(Math.abs(random.nextInt()));

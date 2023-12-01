@@ -204,4 +204,8 @@ public class Block<T extends IRecord> {
             act = null;
         }
     }
+
+    public void resetCountOfValidRecords() {
+        this.countOfValidRecords = 0;
+    }
 }

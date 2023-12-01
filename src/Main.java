@@ -15,15 +15,15 @@ public class Main {
         GPS[] gpsFirst = {gpsOne, gpsTwo};
 
         IRecord parcela4 = new LandParcel(15,gpsFirst,"stvorka objekt");
-        IRecord parcela5 = new LandParcel(16,gpsFirst,"petka objekt");
-        IRecord parcela6= new LandParcel(16,gpsFirst,"sestrka objekt");
+        IRecord parcela5 = new LandParcel(526,gpsFirst,"petka objekt");
+        IRecord parcela6= new LandParcel(526,gpsFirst,"sestrka objekt");
 
         DynamicHashing<LandParcel>  dhp = new DynamicHashing<>(5, LandParcel.class);
 
         GeneratorOfOperationsForLandParcels generatorOfOperations = new GeneratorOfOperationsForLandParcels(dhp);
 
         // ---------- generovanie INSERT -------------
-        generatorOfOperations.insert(10);
+        generatorOfOperations.insert(100);
 
         // ---------- generovanie FIND --------------
         generatorOfOperations.findAllInserted();
