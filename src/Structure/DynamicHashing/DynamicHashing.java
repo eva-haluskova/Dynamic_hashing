@@ -251,5 +251,19 @@ public class DynamicHashing<T extends IRecord> {
         }
         return dataToReturn;
     }
+     public void returnSequenceStringOutput() {
+         for (int i = 0; i < this.nextEmptyBlock; i++) {
+             System.out.println("Blok cislo " + i);
+             ArrayList<IRecord> dataToReturn = new ArrayList<>();
+             dataToReturn.addAll(returnDataFromBlock(i));
+             if (!dataToReturn.isEmpty()) {
+                 for (int j = 0; j < dataToReturn.size(); j++) {
+                     System.out.println(dataToReturn.get(j));
+                 }
+             } else {
+                 System.out.println("Neplatny blok");
+             }
+         }
+     }
 
 }
