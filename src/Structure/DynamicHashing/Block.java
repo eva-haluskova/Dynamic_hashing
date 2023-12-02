@@ -4,24 +4,32 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+/**
+ * Class representing block of data saved in memory containing specific records
+ * and attributes for work with that.
+ */
 public class Block<T extends IRecord> {
 
     private T[] listOfRecords;
-    private Class<T> type;
+    private Class<T> type; // comes in construcor, not need to serialize
     private int countOfValidRecords;
-    private int blockFactor;
-    private int sizeOfRecord;
-    private Block freeNext;
-    private Block freePrevious;
+    private int blockFactor;// comes from construstor, not need to serialze
+    private int sizeOfRecord; // automatic load when creating
+    private Block nextFreeBlock;
+    private Block previousFreeBlock;
+    private Block nextLinkedBlock;
 
     public Block(int parBlockFactor, Class<T> type) {
         this.listOfRecords = (T[]) new IRecord[parBlockFactor];
         this.blockFactor = parBlockFactor;
         this.type = type;
-
         this.sizeOfRecord = this.returnSizeOfRecord();
     }
 
+
+    /**
+     * Returns size of specific class that implement IRecord
+     */
     private int returnSizeOfRecord() {
         // TODO remake
         try {
@@ -33,16 +41,25 @@ public class Block<T extends IRecord> {
         }
     }
 
+    /**
+     * Returns size of the whole block
+     */
     public int getSize() {
         int size =  this.listOfRecords.length * this.sizeOfRecord;
         size += this.getSizeOfHeader();
         return size;
     }
 
+    /**
+     * Return size of block header - so everything expect list of records
+     */
     public int getSizeOfHeader() {
         return Integer.BYTES; // zatial
     }
 
+    /**
+     * serialization methods
+     */
     public byte[] toByteArray() {
         ByteArrayOutputStream hlpByteArrayOutputStream = new ByteArrayOutputStream();
         DataOutputStream hlpOutStream = new DataOutputStream(hlpByteArrayOutputStream);
@@ -67,21 +84,6 @@ public class Block<T extends IRecord> {
         }
     }
 
-    public void writeToFile(int parAddress) {
-        byte[] blockData = this.toByteArray();
-        try {
-            RandomAccessFile file = new RandomAccessFile("file.bin", "rw");
-            file.seek(this.getSize() * parAddress);
-
-            file.write(blockData);
-            file.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        this.fromByteArray(blockData);
-    }
-
     public void fromByteArray(byte[] parData) {
         this.makeBlockNull();
 
@@ -101,12 +103,17 @@ public class Block<T extends IRecord> {
         byte[] records = Arrays.copyOfRange(parData, this.getSizeOfHeader(), parData.length);
 
         for (int i = 0; i < numberOfReadRecords * this.sizeOfRecord; i += this.sizeOfRecord) {
-            byte[] recordBytes = getSubArray(records, i, this.sizeOfRecord);
+            byte[] recordBytes = getSubByteArray(records, i, this.sizeOfRecord);
             this.createRecord(recordBytes);
         }
     }
 
+    /**
+     * From byte array return new instance of object which implements IRecord
+     */
+    // TODO thing of if u use this return value
     private boolean createRecord(byte[] parRecordBytes) {
+        // TODO remake
         try {
             T record = type.newInstance();
             if (record instanceof IRecord) {
@@ -122,22 +129,9 @@ public class Block<T extends IRecord> {
         }
     }
 
-
-    public void fromFileToBlock(int parAddress) {
-        byte[] blockData = new byte[this.getSize()];
-        try {
-            RandomAccessFile file = new RandomAccessFile("file.bin", "rw");
-            file.seek(this.getSize() * parAddress);
-
-            file.read(blockData);
-            file.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        this.fromByteArray(blockData);
-    }
-
+    /**
+     * work with data - insert, find, delete
+     */
     public boolean insertRecord(IRecord parRecord) {
         if (this.countOfValidRecords < this.blockFactor) {
             this.listOfRecords[this.countOfValidRecords] = (T) parRecord;
@@ -157,6 +151,27 @@ public class Block<T extends IRecord> {
         return null;
     }
 
+    public void deleteRecord(IRecord record) {
+        int indexOfDelete = 0;
+        for (int i = 0; i < this.countOfValidRecords; i++) {
+            if (this.listOfRecords[i].equals(record)) {
+                indexOfDelete = i;
+                return;
+            }
+        }
+        this.countOfValidRecords--;
+        for (int i = indexOfDelete; i < this.countOfValidRecords; i++) {
+            this.listOfRecords[i] = this.listOfRecords[i+1];
+        }
+    }
+
+    public void resetCountOfValidRecords() {
+        this.countOfValidRecords = 0;
+    }
+
+    /**
+     * Returning data
+     */
     public IRecord[] returnRecords() {
         return this.listOfRecords;
     }
@@ -164,6 +179,10 @@ public class Block<T extends IRecord> {
     public IRecord[] returnValidRecords() {
         IRecord[] validRec = Arrays.copyOfRange(this.listOfRecords,0,this.countOfValidRecords);
         return validRec;
+    }
+
+    public T getRecordAt(int index) {
+        return this.listOfRecords[index];
     }
 
     public ArrayList<IRecord> returnValidRecordsAsArray() {
@@ -174,6 +193,9 @@ public class Block<T extends IRecord> {
         return dataToReturn;
     }
 
+    /**
+     * Private methods for simple work with byte arrays
+     */
     private byte[] appendByteArrays(byte[] array1, byte[] array2) {
         byte[] result = new byte[array1.length + array2.length];
         System.arraycopy(array1, 0, result, 0, array1.length);
@@ -181,17 +203,17 @@ public class Block<T extends IRecord> {
         return result;
     }
 
-    public byte[] getSubArray(byte[] array, int startIndex, int length) {
+    private byte[] getSubByteArray(byte[] array, int startIndex, int length) {
         if (startIndex + length > array.length) {
             length = array.length - startIndex;
         }
         return Arrays.copyOfRange(array, startIndex, startIndex + length);
     }
 
-    public T getRecordAt(int index) {
-        return this.listOfRecords[index];
-    }
-
+    /**
+     * probably useless method??
+     * TODO
+     */
     private void makeBlockNull() {
         this.countOfValidRecords = 0;
         for (IRecord act: this.listOfRecords) {
@@ -199,7 +221,4 @@ public class Block<T extends IRecord> {
         }
     }
 
-    public void resetCountOfValidRecords() {
-        this.countOfValidRecords = 0;
-    }
 }
