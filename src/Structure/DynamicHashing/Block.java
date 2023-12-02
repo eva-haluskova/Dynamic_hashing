@@ -67,21 +67,6 @@ public class Block<T extends IRecord> {
         }
     }
 
-    public void writeToFile(int parAddress) {
-        byte[] blockData = this.toByteArray();
-        try {
-            RandomAccessFile file = new RandomAccessFile("file.bin", "rw");
-            file.seek(this.getSize() * parAddress);
-
-            file.write(blockData);
-            file.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        this.fromByteArray(blockData);
-    }
-
     public void fromByteArray(byte[] parData) {
         this.makeBlockNull();
 
@@ -120,22 +105,6 @@ public class Block<T extends IRecord> {
             e.printStackTrace();
             return false;
         }
-    }
-
-
-    public void fromFileToBlock(int parAddress) {
-        byte[] blockData = new byte[this.getSize()];
-        try {
-            RandomAccessFile file = new RandomAccessFile("file.bin", "rw");
-            file.seek(this.getSize() * parAddress);
-
-            file.read(blockData);
-            file.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        this.fromByteArray(blockData);
     }
 
     public boolean insertRecord(IRecord parRecord) {

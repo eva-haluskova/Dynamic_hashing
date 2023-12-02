@@ -16,15 +16,17 @@ public class DynamicHashing<T extends IRecord> {
     private int nextEmptyBlock;
     private Class<T> type;
 
-    public DynamicHashing(int parBlockFactor, Class<T> type) {
+    private RandomAccessFile rawMain;
+
+    public DynamicHashing(int parBlockFactor, Class<T> type,String parNameOfFile) {
 
         this.nextEmptyBlock = 0;
         this.blockFactor = parBlockFactor;
         this.type = type;
         try {
-            RandomAccessFile file = new RandomAccessFile("file.bin", "rw");
-            file.setLength(0);
-            file.close();
+            this.rawMain = new RandomAccessFile("file.bin", "rw");
+            this.rawMain.setLength(0);
+            //this.rawMain.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -56,17 +58,6 @@ public class DynamicHashing<T extends IRecord> {
         return record;
     }
 
-//    public IRecord findInAll(IRecord parIRecord) {
-//
-//        ArrayList<IRecord> list = this.returnAllRecords();
-//        for (int i = 0; i < list.size(); i++) {
-//            if (list.get(i).equals(parIRecord)) {
-//                return list.get(i);
-//            }
-//        }
-//        return null;
-//    }
-
     public boolean insert(IRecord parDataToInsert) {
 
         if (this.root == null) {
@@ -74,7 +65,7 @@ public class DynamicHashing<T extends IRecord> {
             this.root = node;
             ((ExternalNode) this.root).setAddress(this.nextEmptyBlock);
             this.nextEmptyBlock++;
-            if(this.insertRecord(parDataToInsert,((ExternalNode) this.root).getAddress())) {
+            if(this.insertRecord(parDataToInsert,((ExternalNode) this.root).getAddress(), this.rawMain)) {
                 ((ExternalNode) this.root).increaseCountOnAddress();
                 return true;
             }
@@ -84,9 +75,7 @@ public class DynamicHashing<T extends IRecord> {
             return false;
         }
 
-
         BitSet traverBitset = parDataToInsert.getHash();
-
 
         int index = 0;
         Node current = this.root;
@@ -105,14 +94,14 @@ public class DynamicHashing<T extends IRecord> {
                 if (((ExternalNode) current).getAddress() == -1) {
                         ((ExternalNode) current).setAddress(this.nextEmptyBlock);
                         this.nextEmptyBlock++;
-                    if (insertRecord(parDataToInsert,((ExternalNode) current).getAddress())) {
+                    if (insertRecord(parDataToInsert,((ExternalNode) current).getAddress(),this.rawMain)) {
                         ((ExternalNode) current).increaseCountOnAddress();
                         return true;
                     }
                 // ak sa tam zmesti dalsie dato, tak ho tam vlozim
                 } else if (((ExternalNode) current).getCountOnAddress() < this.blockFactor) {
 
-                    if (insertRecord(parDataToInsert,((ExternalNode) current).getAddress())) {
+                    if (insertRecord(parDataToInsert,((ExternalNode) current).getAddress(), this.rawMain)) {
                         ((ExternalNode) current).increaseCountOnAddress();
                         return true;
                     }
@@ -122,21 +111,18 @@ public class DynamicHashing<T extends IRecord> {
                     ArrayList<IRecord> dataToInsert = new ArrayList<>();
                     dataToInsert.add(parDataToInsert);
                     while(!isInserted) {
-                        dataToInsert.addAll(this.returnDataFromBlock(((ExternalNode) current).getAddress()));
+                        dataToInsert.addAll(this.returnDataFromBlock(((ExternalNode) current).getAddress(),this.rawMain));
 
                         // v danom bloku su vymazem zaznami, nakolko idem delit
-                        this.deleteAllDataFromBlock(((ExternalNode) current).getAddress());
+                        this.deleteAllDataFromBlock(((ExternalNode) current).getAddress(),this.rawMain);
 
                         // vytvorim si nove nody. Na miesto stareho currena dem dat novy interny ktory ma dvoch synov externych.
                         InternalNode newIntNode = new InternalNode(current.getParent());
                         ExternalNode newExtNode = new ExternalNode(newIntNode);
 
-
                         // novemu internemu nastavim synov nove externe
                         newIntNode.setLeftSon(current);
                         newIntNode.setRightSon(newExtNode);
-
-
 
                         // nastavujem nove dieta otcovi curren,a to neplati pre root, ten otca nema :)
                         if (!current.equals(this.root)) {
@@ -155,22 +141,27 @@ public class DynamicHashing<T extends IRecord> {
                         newExtNode.setAddress(this.nextEmptyBlock);
                         this.nextEmptyBlock++;
 
+                        Block<T> blockCur = this.readBlockFromFile(this.rawMain,((ExternalNode)current).getAddress());
+                        Block<T> blockNew = this.readBlockFromFile(this.rawMain, newExtNode.getAddress());
+
                         Iterator<IRecord> iterator = dataToInsert.iterator();
                         while (iterator.hasNext()) {
                             IRecord record = iterator.next();
                             if (!record.getHash().get(index)) {
-                                if (this.insertRecord(record,((ExternalNode)current).getAddress())) {
+                                if (blockCur.insertRecord(record)) {
                                     ((ExternalNode)current).increaseCountOnAddress();
-                                    iterator.remove();
+                                     iterator.remove();
                                 }
                             } else {
-                                if (this.insertRecord(record,newExtNode.getAddress())) {
+                                if (blockNew.insertRecord(record)) {
                                     newExtNode.increaseCountOnAddress();
                                     iterator.remove();
                                 }
                             }
                         }
 
+                        this.writeBlockToFile(this.rawMain,((ExternalNode)current).getAddress(),blockCur);
+                        this.writeBlockToFile(this.rawMain,newExtNode.getAddress(),blockNew);
 
                         index++;
 
@@ -196,47 +187,28 @@ public class DynamicHashing<T extends IRecord> {
         }
     }
 
-    private boolean insertRecord(IRecord parDataToInsert, int parAddressToSeek) {
-        Block<T> block = new Block<>(this.blockFactor, type);
-        block.fromFileToBlock(parAddressToSeek);
-        if(block.insertRecord(parDataToInsert)) {
-            block.writeToFile(parAddressToSeek);
+    private boolean insertRecord(IRecord parDataToInsert, int parAddressToSeek, RandomAccessFile parFile) {
+        Block<T> block = this.readBlockFromFile(parFile,parAddressToSeek);
+        if (block.insertRecord(parDataToInsert)) {
+            this.writeBlockToFile(parFile,parAddressToSeek,block);
             return true;
         }
         return false;
     }
 
-    private boolean insertRecords(ArrayList<IRecord> parDataToInsert, int parAddressToSeek) {
-        Block<T> block = new Block<>(this.blockFactor, type);
-        block.fromFileToBlock(parAddressToSeek);
-        boolean areInserted = true;
-        for (int i = 0; i <parDataToInsert.size(); i++) {
-            if (!block.insertRecord(parDataToInsert.get(i))) {
-                areInserted = false;
-            }
-        }
-        block.writeToFile(parAddressToSeek);
-        return areInserted;
-    }
-
-
-    private ArrayList<IRecord> returnDataFromBlock(int parAddressToSeek) {
-        Block<T> block = new Block<>(this.blockFactor, type);
-        block.fromFileToBlock(parAddressToSeek);
+    private ArrayList<IRecord> returnDataFromBlock(int parAddressToSeek, RandomAccessFile parFile) {
+        Block<T> block = this.readBlockFromFile(parFile,parAddressToSeek);
         return block.returnValidRecordsAsArray();
     }
 
-    private void deleteAllDataFromBlock(int parAddressToSeek) {
-        Block<T> block = new Block<>(this.blockFactor, type);
-        block.fromFileToBlock(parAddressToSeek);
+    private void deleteAllDataFromBlock(int parAddressToSeek, RandomAccessFile parFile) {
+        Block<T> block = this.readBlockFromFile(parFile,parAddressToSeek);
         block.resetCountOfValidRecords();
-        block.writeToFile(parAddressToSeek);
+        this.writeBlockToFile(parFile, parAddressToSeek, block);
     }
 
     public IRecord findRecord(IRecord parDataToFind, int parAddressToSeek) {
-        Block<T> block = new Block<>(this.blockFactor, type);
-        block.fromFileToBlock(parAddressToSeek);
-
+        Block<T> block = this.readBlockFromFile(this.rawMain,parAddressToSeek);
         IRecord recordToReturn = block.findRecord(parDataToFind);
         if (recordToReturn != null) {
             return recordToReturn;
@@ -247,9 +219,58 @@ public class DynamicHashing<T extends IRecord> {
     public ArrayList<IRecord> returnAllRecords() {
         ArrayList<IRecord> dataToReturn = new ArrayList<>();
         for (int i = 0; i < this.nextEmptyBlock; i++) {
-            dataToReturn.addAll(returnDataFromBlock(i));
+            dataToReturn.addAll(this.returnDataFromBlock(i,this.rawMain));
         }
         return dataToReturn;
+    }
+
+    public void writeBlockToFile(RandomAccessFile parFile, int parAddress, Block<T> parBlock) {
+        byte[] blockData = parBlock.toByteArray();
+        try {
+            parFile.seek(parBlock.getSize() * parAddress);
+            parFile.write(blockData);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public Block<T> readBlockFromFile(RandomAccessFile parFile, int parAddress) {
+        Block<T> block = new Block<>(this.blockFactor, type);
+        byte[] blockData = new byte[block.getSize()];
+
+        try {
+            parFile.seek(block.getSize() * parAddress);
+            parFile.read(blockData);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        block.fromByteArray(blockData);
+        return block;
+    }
+
+    public void finishWorkWithFile(RandomAccessFile parFile) {
+        try {
+            parFile.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void returnContentOfFile() {
+
+        for (int i = 0; i < this.nextEmptyBlock; i++) {
+
+            ArrayList<IRecord> dataToReturn = new ArrayList<>();
+            dataToReturn.addAll(this.returnDataFromBlock(i,this.rawMain));
+            if (!dataToReturn.isEmpty()) {
+                System.out.println("Block " + i);
+                for (int j = 0; j < dataToReturn.size(); j++) {
+                    System.out.println(dataToReturn.get(j).toString());
+                }
+            } else {
+                System.out.println("Invalid block");
+            }
+        }
     }
 
 }
