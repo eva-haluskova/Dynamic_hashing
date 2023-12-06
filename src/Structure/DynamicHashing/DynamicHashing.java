@@ -54,7 +54,7 @@ public class DynamicHashing<T extends IRecord> {
                 index++;
             } else {
                 if (((ExternalNode) current).getAddress() != -1) {
-                    record = this.findRecordInBlock(parRecord, ((ExternalNode) current).getAddress(), this.rawMain);
+                    record = this.findRecordInBlock(parRecord, this.mainFileBlockFactor, ((ExternalNode) current).getAddress(), this.rawMain);
                     foundedNode = true;
                 } else {
                     return null;
@@ -94,6 +94,11 @@ public class DynamicHashing<T extends IRecord> {
             if (traverBitset.length() == index) {
                 if (current.isInstanceOf().equals(Node.TypeOfNode.EXTERNAL)) {
                     if (((ExternalNode) current).getCountOnAddress() >= this.mainFileBlockFactor) {
+                        //System.out.println("idem vkladat do preplnovaku v bloku " + ((ExternalNode) current).getAddress());
+                        if (this.insertIntoOverfillingFile(((ExternalNode) current), parDataToInsert)) {
+                            //System.out.println("vlozilo sa tam dato " + parDataToInsert);
+                            return true;
+                        }
                         return false;
                     }
                 }
@@ -126,7 +131,7 @@ public class DynamicHashing<T extends IRecord> {
                 // ak sa tam zmesti dalsie dato, tak ho tam vlozim
                 } else if (((ExternalNode) current).getCountOnAddress() < this.mainFileBlockFactor) {
 
-                    if (insertRecordIntoBlock(parDataToInsert,((ExternalNode) current).getAddress(), this.rawMain)) {
+                    if (insertRecordIntoBlock(parDataToInsert, this.mainFileBlockFactor, ((ExternalNode) current).getAddress(), this.rawMain)) {
                         ((ExternalNode) current).increaseCountOnAddress();
                         //System.out.println("Dato " + parDataToInsert + " sa vlozilo na " + index + " urovni");
                         return true;
@@ -138,17 +143,24 @@ public class DynamicHashing<T extends IRecord> {
                     dataToInsert.add(parDataToInsert);
                     while(!isInserted) {
 
+                        // keby to daz nizsie, az vtedy si to rozbijes, teraz mas urcite jedno dato ktore sa ti nezmesilo do currenta pertoze do currena si v
+                        // uz v predoslej iteracii naplnila ostatnymi datami
                         if (traverBitset.length() == index) {
                             if (current.isInstanceOf().equals(Node.TypeOfNode.EXTERNAL)) {
                                 if (((ExternalNode) current).getCountOnAddress() >= this.mainFileBlockFactor) {
+                                    //System.out.println("idem vkladat do preplnovaku v bloku " + ((ExternalNode) current).getAddress());
+                                    if (this.insertIntoOverfillingFile(((ExternalNode) current), dataToInsert.get(0))) {
+                                        //System.out.println("vlozilo sa tam dato " + dataToInsert.get(0));
+                                        return true;
+                                    }
                                     return false;
                                 }
                             }
                         }
 
-                        dataToInsert.addAll(this.returnAllDataFromBlock(((ExternalNode) current).getAddress(), this.rawMain));
+                        dataToInsert.addAll(this.returnAllDataFromBlock(((ExternalNode) current).getAddress(), this.mainFileBlockFactor, this.rawMain));
                         // v danom bloku su vymazem zaznami, nakolko idem delit
-                        this.deleteAllDataFromBlock(((ExternalNode) current).getAddress(), this.rawMain);
+                        this.deleteAllDataFromBlock(((ExternalNode) current).getAddress(), this.mainFileBlockFactor, this.rawMain);
                         ((ExternalNode) current).setCountOnAddress(0);
 
                         // vytvorim si nove nody. Na miesto stareho currena dem dat novy interny ktory ma dvoch synov externych.
@@ -177,12 +189,11 @@ public class DynamicHashing<T extends IRecord> {
 
                         Block<T> blockCur;
                         if (((ExternalNode)current).getAddress() != -1) {
-                            blockCur = this.readBlockFromFile(this.rawMain,((ExternalNode)current).getAddress());
+                            blockCur = this.readBlockFromFile(this.rawMain, this.mainFileBlockFactor,((ExternalNode)current).getAddress());
                         } else {
                             blockCur = new Block<>(this.mainFileBlockFactor, type);
                         }
 
-                        //Block<T> blockNew = this.readBlockFromFile(this.rawMain, newExtNode.getAddress());
                         Block<T> blockNew = new Block<>(this.mainFileBlockFactor, type);
 
                         Iterator<IRecord> iterator = dataToInsert.iterator();
@@ -232,6 +243,49 @@ public class DynamicHashing<T extends IRecord> {
         }
     }
 
+    public boolean insertIntoOverfillingFile(ExternalNode parNode, IRecord parRecordToInsert) {
+        Block<T> block = this.readBlockFromFile(this.rawMain, this.mainFileBlockFactor, parNode.getAddress());
+        if (block.getNextLinkedBlock() == -1) {
+            int newAddress = this.getAddressOfNextEmptyBlockInOverfillingFile();
+            Block<T> newBlock = new Block<>(this.overfillingFileBlockFactor,type);
+            if (newBlock.insertRecord(parRecordToInsert)) {
+                parNode.increaseCountOnAddress();
+                this.writeBlockToFile(this.rawOverfillFile, newAddress, newBlock);
+                block.setNextLinkedBlock(newAddress);
+                this.writeBlockToFile(this.rawMain, parNode.getAddress(), block);
+                parNode.increaseCountOfLinkedBlocks();
+                return true;
+            }
+        } else {
+            Block<T> nextBlock = this.readBlockFromFile(this.rawOverfillFile,this.overfillingFileBlockFactor,block.getNextLinkedBlock());
+            int addressOfNextPrevious = block.getNextLinkedBlock();
+            while(nextBlock.getNextLinkedBlock() != -1) {
+                //System.out.println("asi som sa tu zasekla");
+                addressOfNextPrevious = nextBlock.getNextLinkedBlock();
+                nextBlock = this.readBlockFromFile(this.rawOverfillFile,this.overfillingFileBlockFactor, nextBlock.getNextLinkedBlock());
+            }
+            if (nextBlock.getValidCount() == this.overfillingFileBlockFactor) {
+                int newAddress = this.getAddressOfNextEmptyBlockInOverfillingFile();
+                Block<T> newBlock = new Block<>(this.overfillingFileBlockFactor,type);
+                if (newBlock.insertRecord(parRecordToInsert)) {
+                    parNode.increaseCountOnAddress();
+                    this.writeBlockToFile(this.rawOverfillFile, newAddress, newBlock);
+                    nextBlock.setNextLinkedBlock(newAddress);
+                    this.writeBlockToFile(this.rawOverfillFile, addressOfNextPrevious, nextBlock);
+                    parNode.increaseCountOfLinkedBlocks();
+                    return true;
+                }
+            } else {
+                if (nextBlock.insertRecord(parRecordToInsert)) {
+                    parNode.increaseCountOnAddress();
+                    this.writeBlockToFile(this.rawOverfillFile, addressOfNextPrevious, nextBlock);
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     public void delete(IRecord parRecord) {
 
     }
@@ -239,8 +293,8 @@ public class DynamicHashing<T extends IRecord> {
     /**
      * Private methods for work with records - processing records for next writing - reading from file
      */
-    private boolean insertRecordIntoBlock(IRecord parDataToInsert, int parAddressToSeek, RandomAccessFile parFile) {
-        Block<T> block = this.readBlockFromFile(parFile,parAddressToSeek);
+    private boolean insertRecordIntoBlock(IRecord parDataToInsert, int parBlockFactor, int parAddressToSeek, RandomAccessFile parFile) {
+        Block<T> block = this.readBlockFromFile(parFile,parBlockFactor,parAddressToSeek);
         if (block.insertRecord(parDataToInsert)) {
             this.writeBlockToFile(parFile,parAddressToSeek,block);
             return true;
@@ -248,8 +302,8 @@ public class DynamicHashing<T extends IRecord> {
         return false;
     }
 
-    private IRecord findRecordInBlock(IRecord parDataToFind, int parAddressToSeek, RandomAccessFile parFile) {
-        Block<T> block = this.readBlockFromFile(parFile,parAddressToSeek);
+    private IRecord findRecordInBlock(IRecord parDataToFind,int parBlockFactor, int parAddressToSeek, RandomAccessFile parFile) {
+        Block<T> block = this.readBlockFromFile(parFile, parBlockFactor, parAddressToSeek);
         IRecord recordToReturn = block.findRecord(parDataToFind);
         if (recordToReturn != null) {
             return recordToReturn;
@@ -257,20 +311,20 @@ public class DynamicHashing<T extends IRecord> {
         return null;
     }
 
-    public void deleteRecordFromBlock(IRecord parDataToDelete, int parAddressToSeek, RandomAccessFile parFile) {
-        Block<T> block = this.readBlockFromFile(parFile,parAddressToSeek);
+    public void deleteRecordFromBlock(IRecord parDataToDelete, int parBlockFactor, int parAddressToSeek, RandomAccessFile parFile) {
+        Block<T> block = this.readBlockFromFile(parFile, parBlockFactor, parAddressToSeek);
         block.deleteRecord(parDataToDelete);
         this.writeBlockToFile(parFile,parAddressToSeek,block);
     }
 
-    private void deleteAllDataFromBlock(int parAddressToSeek, RandomAccessFile parFile) {
-        Block<T> block = this.readBlockFromFile(parFile,parAddressToSeek);
+    private void deleteAllDataFromBlock(int parAddressToSeek, int parBlockFactor, RandomAccessFile parFile) {
+        Block<T> block = this.readBlockFromFile(parFile, parBlockFactor, parAddressToSeek);
         block.resetCountOfValidRecords();
         this.writeBlockToFile(parFile, parAddressToSeek, block);
     }
 
-    private ArrayList<IRecord> returnAllDataFromBlock(int parAddressToSeek, RandomAccessFile parFile) {
-        Block<T> block = this.readBlockFromFile(parFile,parAddressToSeek);
+    private ArrayList<IRecord> returnAllDataFromBlock(int parAddressToSeek, int parBlockFactor, RandomAccessFile parFile) {
+        Block<T> block = this.readBlockFromFile(parFile, parBlockFactor, parAddressToSeek);
         return block.returnValidRecordsAsArray();
     }
 
@@ -289,8 +343,8 @@ public class DynamicHashing<T extends IRecord> {
         }
     }
 
-    public Block<T> readBlockFromFile(RandomAccessFile parFile, int parAddress) {
-        Block<T> block = new Block<>(this.mainFileBlockFactor, type);
+    public Block<T> readBlockFromFile(RandomAccessFile parFile, int parBlockFactor, int parAddress) {
+        Block<T> block = new Block<>(parBlockFactor, type);
         byte[] blockData = new byte[block.getSize()];
 
         try {
@@ -320,14 +374,14 @@ public class DynamicHashing<T extends IRecord> {
             return this.getSizeOfMainFile()/this.getSizeOfMainBlock();
         } else {
             int addressToReturn = this.firstEmptyBlockMainFile;
-            Block<T> nextEmpty = this.readBlockFromFile(this.rawMain,this.firstEmptyBlockMainFile);
+            Block<T> nextEmpty = this.readBlockFromFile(this.rawMain, this.mainFileBlockFactor,this.firstEmptyBlockMainFile);
             if (this.firstEmptyBlockMainFile != -1 && nextEmpty.getNextFreeBlock() == -1) {
                 this.firstEmptyBlockMainFile = -1;
                 return addressToReturn;
             } else {
                 this.firstEmptyBlockMainFile = nextEmpty.getNextFreeBlock();
                 nextEmpty.setNextFreeBlock(-1);
-                Block<T> nextNextEmpty = this.readBlockFromFile(this.rawMain,this.firstEmptyBlockMainFile);
+                Block<T> nextNextEmpty = this.readBlockFromFile(this.rawMain,this.mainFileBlockFactor,this.firstEmptyBlockMainFile);
                 nextNextEmpty.setPreviousFreeBlock(-1);
                 this.writeBlockToFile(this.rawMain,this.firstEmptyBlockMainFile,nextNextEmpty);
                 nextEmpty.setNextFreeBlock(-1);
@@ -338,8 +392,27 @@ public class DynamicHashing<T extends IRecord> {
 
     }
 
+    // pay attention for atriubt nextLinkedBlock
     public int getAddressOfNextEmptyBlockInOverfillingFile() {
-        return -1;
+        if (this.firstEmptyBlockOverfillingFile == -1) {
+            return this.getSizeOfOverfillingFile()/this.getSizeOfOverfillingBlock();
+        } else {
+            int addressToReturn = this.firstEmptyBlockOverfillingFile;
+            Block<T> nextEmpty = this.readBlockFromFile(this.rawOverfillFile, this.overfillingFileBlockFactor,this.firstEmptyBlockOverfillingFile);
+            if (this.firstEmptyBlockOverfillingFile != -1 && nextEmpty.getNextFreeBlock() == -1) {
+                this.firstEmptyBlockOverfillingFile = -1;
+                return addressToReturn;
+            } else {
+                this.firstEmptyBlockOverfillingFile = nextEmpty.getNextFreeBlock();
+                nextEmpty.setNextFreeBlock(-1);
+                Block<T> nextNextEmpty = this.readBlockFromFile(this.rawOverfillFile,this.overfillingFileBlockFactor,this.firstEmptyBlockOverfillingFile);
+                nextNextEmpty.setPreviousFreeBlock(-1);
+                this.writeBlockToFile(this.rawOverfillFile,this.firstEmptyBlockOverfillingFile,nextNextEmpty);
+                nextEmpty.setNextFreeBlock(-1);
+                this.writeBlockToFile(this.rawOverfillFile,addressToReturn,nextEmpty);
+                return addressToReturn;
+            }
+        }
     }
 
     public void releaseEmptyBlockInMainFile(int parAddress, Block<T> parBlock) {
@@ -350,15 +423,27 @@ public class DynamicHashing<T extends IRecord> {
             int address = this.firstEmptyBlockMainFile;
             this.firstEmptyBlockMainFile = parAddress;
             parBlock.setNextFreeBlock(address);
-            Block<T> nextEmpty = this.readBlockFromFile(this.rawMain,address);
+            Block<T> nextEmpty = this.readBlockFromFile(this.rawMain,this.mainFileBlockFactor,address);
             nextEmpty.setPreviousFreeBlock(parAddress);
             this.writeBlockToFile(this.rawMain, address, nextEmpty);
             this.writeBlockToFile(this.rawMain,parAddress,parBlock);
         }
     }
 
-    public void releaseEmptyBlockInOverfillingFile() {
-
+    // pay attention for atrubte zretazenie
+    public void releaseEmptyBlockInOverfillingFile(int parAddress, Block<T> parBlock) {
+        if (this.firstEmptyBlockOverfillingFile == -1) {
+            this.firstEmptyBlockOverfillingFile = parAddress;
+            this.writeBlockToFile(this.rawOverfillFile, parAddress, parBlock);
+        } else {
+            int address = this.firstEmptyBlockOverfillingFile;
+            this.firstEmptyBlockOverfillingFile = parAddress;
+            parBlock.setNextFreeBlock(address);
+            Block<T> nextEmpty = this.readBlockFromFile(this.rawOverfillFile,this.overfillingFileBlockFactor,address);
+            nextEmpty.setPreviousFreeBlock(parAddress);
+            this.writeBlockToFile(this.rawOverfillFile, address, nextEmpty);
+            this.writeBlockToFile(this.rawOverfillFile,parAddress,parBlock);
+        }
     }
 
     /**
@@ -407,30 +492,54 @@ public class DynamicHashing<T extends IRecord> {
     /**
      * Returning data from the whole trie
      */
-    public ArrayList<IRecord> returnAllRecords(RandomAccessFile parFile, int parFileSize, int parBlockSize) {
-        ArrayList<IRecord> dataToReturn = new ArrayList<>();
-        for (int i = 0; i < parFileSize/parBlockSize; i++) {
-            dataToReturn.addAll(this.returnAllDataFromBlock(i,parFile));
-        }
-        return dataToReturn;
-    }
+//    public ArrayList<IRecord> returnAllRecords(RandomAccessFile parFile, int parFileSize, int parBlockSize) {
+//        ArrayList<IRecord> dataToReturn = new ArrayList<>();
+//        for (int i = 0; i < parFileSize/parBlockSize; i++) {
+//            dataToReturn.addAll(this.returnAllDataFromBlock(i,parFile));
+//        }
+//        return dataToReturn;
+//    }
 
     public ArrayList<IRecord> returnAllRecords() {
         ArrayList<IRecord> dataToReturn = new ArrayList<>();
         for (int i = 0; i < this.getSizeOfMainFile()/this.getSizeOfMainBlock(); i++) {
-            dataToReturn.addAll(this.returnAllDataFromBlock(i,this.rawMain));
+            dataToReturn.addAll(this.returnAllDataFromBlock(i,this.mainFileBlockFactor,this.rawMain));
+
+            Block<T> act = this.readBlockFromFile(this.rawMain, this.mainFileBlockFactor, i);
+            if (act.getNextLinkedBlock() != -1) {
+                while (act.getNextLinkedBlock() != -1) {
+                    dataToReturn.addAll(returnAllDataFromBlock(act.getNextLinkedBlock(), this.overfillingFileBlockFactor, this.rawOverfillFile));
+                    act = this.readBlockFromFile(this.rawOverfillFile, this.overfillingFileBlockFactor, act.getNextLinkedBlock());
+                }
+            }
+
         }
+
         return dataToReturn;
     }
 
     /**
      * print on console containing block sequential
      */
-    public void returnSequenceStringOutput(RandomAccessFile parFile, int parFileSize, int parBlockSize) {
-        for (int i = 0; i < parFileSize/parBlockSize; i++) {
+//    public void returnSequenceStringOutput(RandomAccessFile parFile, int parFileSize, int parBlockSize) {
+//        for (int i = 0; i < parFileSize/parBlockSize; i++) {
+//            System.out.println("Block number " + i);
+//            ArrayList<IRecord> dataToReturn = new ArrayList<>();
+//            dataToReturn.addAll(returnAllDataFromBlock(i, parFile));
+//            if (!dataToReturn.isEmpty()) {
+//                for (int j = 0; j < dataToReturn.size(); j++) {
+//                    System.out.println(dataToReturn.get(j));
+//                }
+//            } else {
+//                System.out.println("Invalid block");
+//            }
+//        }
+//    }
+    public void returnSequenceStringOutput() {
+        for (int i = 0; i < this.getSizeOfMainFile()/this.getSizeOfMainBlock(); i++) {
             System.out.println("Block number " + i);
             ArrayList<IRecord> dataToReturn = new ArrayList<>();
-            dataToReturn.addAll(returnAllDataFromBlock(i, parFile));
+            dataToReturn.addAll(returnAllDataFromBlock(i, this.mainFileBlockFactor, this.rawMain));
             if (!dataToReturn.isEmpty()) {
                 for (int j = 0; j < dataToReturn.size(); j++) {
                     System.out.println(dataToReturn.get(j));
@@ -440,17 +549,34 @@ public class DynamicHashing<T extends IRecord> {
             }
         }
     }
-    public void returnSequenceStringOutput() {
+
+    public void returnSequenceStringOutputWithOverfillingFiles() {
         for (int i = 0; i < this.getSizeOfMainFile()/this.getSizeOfMainBlock(); i++) {
             System.out.println("Block number " + i);
             ArrayList<IRecord> dataToReturn = new ArrayList<>();
-            dataToReturn.addAll(returnAllDataFromBlock(i, this.rawMain));
+            dataToReturn.addAll(returnAllDataFromBlock(i, this.mainFileBlockFactor, this.rawMain));
             if (!dataToReturn.isEmpty()) {
                 for (int j = 0; j < dataToReturn.size(); j++) {
                     System.out.println(dataToReturn.get(j));
                 }
             } else {
                 System.out.println("Invalid block");
+            }
+            Block<T> act = this.readBlockFromFile(this.rawMain, this.mainFileBlockFactor, i);
+            if (act.getNextLinkedBlock() != -1) {
+                System.out.println("  Preplnovak: ");
+                while (act.getNextLinkedBlock() != -1) {
+                    System.out.println("   Block na adrese: " + act.getNextLinkedBlock());
+                    ArrayList<IRecord> dataToReturnOver = new ArrayList<>();
+                    dataToReturnOver.addAll(returnAllDataFromBlock(act.getNextLinkedBlock(), this.overfillingFileBlockFactor, this.rawOverfillFile));
+                    if (!dataToReturnOver.isEmpty()) {
+                        for (int j = 0; j < dataToReturnOver.size(); j++) {
+                            System.out.println("        " + dataToReturnOver.get(j));
+                        }
+                    }
+
+                    act = this.readBlockFromFile(this.rawOverfillFile, this.overfillingFileBlockFactor, act.getNextLinkedBlock());
+                }
             }
         }
     }

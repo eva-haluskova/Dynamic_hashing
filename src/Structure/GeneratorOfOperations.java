@@ -27,12 +27,16 @@ public abstract class GeneratorOfOperations<T extends IRecord> {
         return null;
     }
 
+    public ArrayList<IRecord> returnInsertedRecored() {
+        return this.insertedRecords;
+    }
+
     public boolean findAllInserted() {
 
-//        System.out.println("Vsetky data ktore som inzertovala: ");
-//        for (int i = 0; i < this.insertedRecords.size(); i++) {
-//            System.out.println(this.insertedRecords.get(i));
-//        }
+        System.out.println("Vsetky data ktore som inzertovala: ");
+        for (int i = 0; i < this.insertedRecords.size(); i++) {
+            System.out.println(this.insertedRecords.get(i));
+        }
 
         ArrayList<IRecord> foundArray = new ArrayList<>();
         for (IRecord act : this.insertedRecords) {
@@ -42,10 +46,10 @@ public abstract class GeneratorOfOperations<T extends IRecord> {
             }
         }
 
-//        System.out.println("Vsetky data ktore som nasla podla findu v trie: ");
-//        for (int i = 0; i < foundArray.size(); i++) {
-//            System.out.println(foundArray.get(i));
-//        }
+        System.out.println("Vsetky data ktore som nasla podla findu v trie: ");
+        for (int i = 0; i < foundArray.size(); i++) {
+            System.out.println(foundArray.get(i));
+        }
 
         if (foundArray.containsAll(this.insertedRecords) && foundArray.size() == this.insertedRecords.size()) {
             System.out.println("Find of all items was success!!");
@@ -65,12 +69,23 @@ public abstract class GeneratorOfOperations<T extends IRecord> {
             }
         }
 
-//        System.out.println("Vrati setky data z trie");
-//        for (int i = 0; i < arrayToCompare.size(); i++) {
-//            System.out.println(arrayToCompare.get(i));
-//        };
+        System.out.println("Vrati setky data z trie");
+        for (int i = 0; i < arrayToCompare.size(); i++) {
+            System.out.println(arrayToCompare.get(i));
+        };
 
         if (foundArray.containsAll(arrayToCompare) && foundArray.size() == arrayToCompare.size()) {
+            System.out.println("They are same!!");
+            return true;
+        } else {
+            System.out.println("They are not same! :(");
+            return false;
+        }
+    }
+
+    public boolean checkIfTheyAreSame(ArrayList<IRecord> arrayToCompare) {
+
+        if (this.insertedRecords.containsAll(arrayToCompare) && this.insertedRecords.size() == arrayToCompare.size()) {
             System.out.println("They are same!!");
             return true;
         } else {

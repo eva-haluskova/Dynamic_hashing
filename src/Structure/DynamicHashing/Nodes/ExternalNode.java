@@ -52,4 +52,12 @@ public class ExternalNode extends Node {
     public void setCountOfLinkedBlocks(int parCountOfLinkedBlocks) {
         this.countOfLinkedBlocks = parCountOfLinkedBlocks;
     }
+
+    public void increaseCountOfLinkedBlocks() {
+        this.countOfLinkedBlocks++;
+    }
+
+    public void decreaseCountOfLinkedBlocks() {
+        this.countOfLinkedBlocks++;
+    }
 }

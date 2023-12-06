@@ -54,7 +54,7 @@ public class CadastralObjectGenerator {
         int seconds = (int) (currentDate.getTime() / 1000); // Divide by 1000 to get seconds
 
         int o = Math.abs(this.random.nextInt());
-        LandParcel sa = new LandParcel(this.landParcelId, this.returnGPSOfObject(parSizeOfObject,parRangeOfGPS),"LP_" + this.landParcelId);
+        LandParcel sa = new LandParcel(o, this.returnGPSOfObject(parSizeOfObject,parRangeOfGPS),"LP_" + this.landParcelId);
         // TODO ja viem ze je to zatial zle, toto je zatila ozaj len na otestovanie tvorby
         for (int i = 0; i < pocetLeziacichParciel; i++) {
             sa.addBelongingRealEstate(Math.abs(random.nextInt()));

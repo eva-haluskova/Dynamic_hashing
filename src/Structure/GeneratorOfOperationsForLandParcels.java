@@ -26,7 +26,7 @@ public class GeneratorOfOperationsForLandParcels extends GeneratorOfOperations<L
         for (int i = 0; i < count; i++) {
             IRecord record = this.generaterParciel.generateLandParcel(size,range);
             if(this.dynamicHashing.insert(record)) {
-                System.out.println("land parcel " + i + " inserted");
+                //System.out.println("land parcel " + i + " inserted");
                 this.insertedRecords.add(record);
             }
 

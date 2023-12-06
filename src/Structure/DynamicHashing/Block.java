@@ -57,6 +57,10 @@ public class Block<T extends IRecord> {
         this.nextLinkedBlock = parNextLinkedBlock;
     }
 
+    public int getValidCount() {
+        return this.countOfValidRecords;
+    }
+
     /**
      * Returns size of specific class that implement IRecord
      */
