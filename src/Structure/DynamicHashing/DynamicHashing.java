@@ -90,6 +90,16 @@ public class DynamicHashing<T extends IRecord> {
         Node current = this.root;
 
         while (true) {
+
+            if (traverBitset.length() == index) {
+                if (current.isInstanceOf().equals(Node.TypeOfNode.EXTERNAL)) {
+                    if (((ExternalNode) current).getCountOnAddress() >= this.mainFileBlockFactor) {
+                        return false;
+                    }
+                }
+            }
+
+
             // ak je current interny traverzujem do externeho vrcholu
             if (current.isInstanceOf() == Node.TypeOfNode.INTERNAL) {
                 if (!traverBitset.get(index)) {
@@ -108,6 +118,7 @@ public class DynamicHashing<T extends IRecord> {
                     if (block.insertRecord(parDataToInsert)) {
                         ((ExternalNode)current).increaseCountOnAddress();
                         this.writeBlockToFile(this.rawMain,((ExternalNode) current).getAddress(),block);
+                        //System.out.println("Dato " + parDataToInsert + " sa vlozilo na " + index + " urovni");
                         return true;
                     }
 
@@ -117,6 +128,7 @@ public class DynamicHashing<T extends IRecord> {
 
                     if (insertRecordIntoBlock(parDataToInsert,((ExternalNode) current).getAddress(), this.rawMain)) {
                         ((ExternalNode) current).increaseCountOnAddress();
+                        //System.out.println("Dato " + parDataToInsert + " sa vlozilo na " + index + " urovni");
                         return true;
                     }
                 // ak sa nezmsti dalsie dato, musis rozbijat strom kym sa ti to nepodari:
@@ -125,6 +137,15 @@ public class DynamicHashing<T extends IRecord> {
                     ArrayList<IRecord> dataToInsert = new ArrayList<>();
                     dataToInsert.add(parDataToInsert);
                     while(!isInserted) {
+
+                        if (traverBitset.length() == index) {
+                            if (current.isInstanceOf().equals(Node.TypeOfNode.EXTERNAL)) {
+                                if (((ExternalNode) current).getCountOnAddress() >= this.mainFileBlockFactor) {
+                                    return false;
+                                }
+                            }
+                        }
+
                         dataToInsert.addAll(this.returnAllDataFromBlock(((ExternalNode) current).getAddress(), this.rawMain));
                         // v danom bloku su vymazem zaznami, nakolko idem delit
                         this.deleteAllDataFromBlock(((ExternalNode) current).getAddress(), this.rawMain);
@@ -170,11 +191,13 @@ public class DynamicHashing<T extends IRecord> {
                             if (!record.getHash().get(index)) {
                                 if (blockCur.insertRecord(record)) {
                                     ((ExternalNode)current).increaseCountOnAddress();
+                                   // System.out.println("Dato " + record + " sa vlozilo na " + index + " urovni");
                                      iterator.remove();
                                 }
                             } else {
                                 if (blockNew.insertRecord(record)) {
                                     newExtNode.increaseCountOnAddress();
+                                  //  System.out.println("Dato " + record + " sa vlozilo na " + index + " urovni");
                                     iterator.remove();
                                 }
                             }
@@ -202,6 +225,7 @@ public class DynamicHashing<T extends IRecord> {
                             this.writeBlockToFile(this.rawMain,newExtNode.getAddress(),blockNew);
                         }
                     }
+
                     return true;
                 }
             }
