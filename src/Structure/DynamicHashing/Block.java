@@ -195,13 +195,28 @@ public class Block<T extends IRecord> {
         for (int i = 0; i < this.countOfValidRecords; i++) {
             if (this.listOfRecords[i].equals(record)) {
                 indexOfDelete = i;
-                return;
             }
         }
         this.countOfValidRecords--;
         for (int i = indexOfDelete; i < this.countOfValidRecords; i++) {
             this.listOfRecords[i] = this.listOfRecords[i+1];
         }
+    }
+
+    public boolean deleteRecordRet(IRecord record) {
+        boolean ret = false;
+        int indexOfDelete = 0;
+        for (int i = 0; i < this.countOfValidRecords; i++) {
+            if (this.listOfRecords[i].equals(record)) {
+                indexOfDelete = i;
+                ret = true;
+            }
+        }
+        this.countOfValidRecords--;
+        for (int i = indexOfDelete; i < this.countOfValidRecords; i++) {
+            this.listOfRecords[i] = this.listOfRecords[i+1];
+        }
+        return ret;
     }
 
     public void resetCountOfValidRecords() {

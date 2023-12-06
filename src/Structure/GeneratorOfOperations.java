@@ -60,6 +60,13 @@ public abstract class GeneratorOfOperations<T extends IRecord> {
         }
     }
 
+    public void delete() {
+        for (int i = 0; i < this.insertedRecords.size(); i++) {
+            this.dynamicHashing.delete(this.insertedRecords.get(i));
+        }
+
+    }
+
     public boolean checkIfTheyAreSme(ArrayList<IRecord> arrayToCompare) {
         ArrayList<IRecord> foundArray = new ArrayList<>();
         for (IRecord act : this.insertedRecords) {

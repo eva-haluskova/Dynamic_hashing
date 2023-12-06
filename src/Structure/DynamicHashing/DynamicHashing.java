@@ -56,6 +56,7 @@ public class DynamicHashing<T extends IRecord> {
                 if (((ExternalNode) current).getAddress() != -1) {
                     //record = this.findRecordInBlock(parRecord, this.mainFileBlockFactor, ((ExternalNode) current).getAddress(), this.rawMain);
                     record = this.findRecord(parRecord, this.mainFileBlockFactor, ((ExternalNode) current).getAddress(), this.rawMain);
+                    System.out.println("nasla som dato: " + parRecord);
                     foundedNode = true;
                 } else {
                     return null;
@@ -288,7 +289,31 @@ public class DynamicHashing<T extends IRecord> {
     }
 
     public void delete(IRecord parRecord) {
+        BitSet traverBitset = parRecord.getHash();
 
+        if (this.find(parRecord) == null) {
+            System.out.println("Data isn't possible to remove, because they don't exist.");
+        } else {
+
+            boolean foundedNode = false;
+            int index = 0;
+            Node current = this.root;
+            while (!foundedNode) {
+                // ak je current interny traverzujem do externeho vrcholu
+                if (current.isInstanceOf() == Node.TypeOfNode.INTERNAL) {
+                    if (!traverBitset.get(index)) {
+                        current = ((InternalNode) current).getLeftSon();
+                    } else {
+                        current = ((InternalNode) current).getRightSon();
+                    }
+                    index++;
+                } else {
+                    this.deleteRecord(parRecord,this.mainFileBlockFactor,((ExternalNode) current).getAddress(),this.rawMain);
+                    ((ExternalNode) current).decreaseCountOnAddress();
+                    foundedNode = true;
+                }
+            }
+        }
     }
 
     /**
@@ -301,7 +326,10 @@ public class DynamicHashing<T extends IRecord> {
             return true;
         }
         return false;
+
+
     }
+
 
     private IRecord findRecordInBlock(IRecord parDataToFind,int parBlockFactor, int parAddressToSeek, RandomAccessFile parFile) {
         Block<T> block = this.readBlockFromFile(parFile, parBlockFactor, parAddressToSeek);
@@ -332,25 +360,33 @@ public class DynamicHashing<T extends IRecord> {
 
             return null;
         }
-
-//        do {
-//            IRecord recordToReturn = block.findRecord(parDataToFind);
-//            if (recordToReturn != null) {
-//                return recordToReturn;
-//            }
-//            if (block.getNextLinkedBlock() != -1) {
-//                block = this.readBlockFromFile(this.rawOverfillFile, this.overfillingFileBlockFactor, block.getNextLinkedBlock());
-//            }
-//        } while (block.getNextLinkedBlock() != -1);
-//        System.out.println("dato " + parDataToFind + " sa nenaslo");
-//        return null;
-
     }
 
     public void deleteRecordFromBlock(IRecord parDataToDelete, int parBlockFactor, int parAddressToSeek, RandomAccessFile parFile) {
         Block<T> block = this.readBlockFromFile(parFile, parBlockFactor, parAddressToSeek);
         block.deleteRecord(parDataToDelete);
+        System.out.println("data " + parDataToDelete + " are deleted");
         this.writeBlockToFile(parFile,parAddressToSeek,block);
+    }
+
+    public void deleteRecord(IRecord parDataToDelete, int parBlockFactor, int parAddressToSeek, RandomAccessFile parFile) {
+        Block<T> block = this.readBlockFromFile(parFile, parBlockFactor, parAddressToSeek);
+        if (block.getNextLinkedBlock() == -1) {
+            deleteRecordFromBlock(parDataToDelete,parBlockFactor,parAddressToSeek,parFile);
+        } else {
+            if (block.deleteRecordRet(parDataToDelete)) {
+                this.writeBlockToFile(this.rawMain,parAddressToSeek,block);
+                return;
+            }
+            do {
+                int addr = block.getNextLinkedBlock();
+                block = this.readBlockFromFile(this.rawOverfillFile, this.overfillingFileBlockFactor, block.getNextLinkedBlock());
+                if (block.deleteRecordRet(parDataToDelete)) {
+                    this.writeBlockToFile(this.rawOverfillFile,addr,block);
+                    return;
+                }
+            } while (block.getNextLinkedBlock() != -1);
+        }
     }
 
     private void deleteAllDataFromBlock(int parAddressToSeek, int parBlockFactor, RandomAccessFile parFile) {
