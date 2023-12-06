@@ -54,7 +54,8 @@ public class DynamicHashing<T extends IRecord> {
                 index++;
             } else {
                 if (((ExternalNode) current).getAddress() != -1) {
-                    record = this.findRecordInBlock(parRecord, this.mainFileBlockFactor, ((ExternalNode) current).getAddress(), this.rawMain);
+                    //record = this.findRecordInBlock(parRecord, this.mainFileBlockFactor, ((ExternalNode) current).getAddress(), this.rawMain);
+                    record = this.findRecord(parRecord, this.mainFileBlockFactor, ((ExternalNode) current).getAddress(), this.rawMain);
                     foundedNode = true;
                 } else {
                     return null;
@@ -309,6 +310,41 @@ public class DynamicHashing<T extends IRecord> {
             return recordToReturn;
         }
         return null;
+    }
+
+    private IRecord findRecord(IRecord parDataToFind,int parBlockFactor, int parAddressToSeek, RandomAccessFile parFile) {
+        Block<T> block = this.readBlockFromFile(parFile, parBlockFactor, parAddressToSeek);
+        if (block.getNextLinkedBlock() == -1) {
+            return findRecordInBlock(parDataToFind, this.mainFileBlockFactor, parAddressToSeek, this.rawMain);
+        } else {
+            IRecord recordToRetur = block.findRecord(parDataToFind);
+            if (recordToRetur != null) {
+                return recordToRetur;
+            }
+
+            do {
+                block = this.readBlockFromFile(this.rawOverfillFile, this.overfillingFileBlockFactor, block.getNextLinkedBlock());
+                IRecord recordToReturn = block.findRecord(parDataToFind);
+                if (recordToReturn != null) {
+                    return recordToReturn;
+                }
+            } while (block.getNextLinkedBlock() != -1);
+
+            return null;
+        }
+
+//        do {
+//            IRecord recordToReturn = block.findRecord(parDataToFind);
+//            if (recordToReturn != null) {
+//                return recordToReturn;
+//            }
+//            if (block.getNextLinkedBlock() != -1) {
+//                block = this.readBlockFromFile(this.rawOverfillFile, this.overfillingFileBlockFactor, block.getNextLinkedBlock());
+//            }
+//        } while (block.getNextLinkedBlock() != -1);
+//        System.out.println("dato " + parDataToFind + " sa nenaslo");
+//        return null;
+
     }
 
     public void deleteRecordFromBlock(IRecord parDataToDelete, int parBlockFactor, int parAddressToSeek, RandomAccessFile parFile) {
