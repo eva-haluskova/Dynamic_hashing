@@ -136,8 +136,27 @@ public class LandParcel extends CadastralObject {
 
     @Override
     public BitSet getHash() {
+        //int hashCode = Objects.hash(this.identityNumber);
+        //return BitSet.valueOf(new long[] {hashCode});
         int hashCode = Objects.hash(this.identityNumber);
-        return BitSet.valueOf(new long[] {hashCode});
+
+        // Create a BitSet with a fixed length (e.g., 64 bits in this example)
+        BitSet bitSet = new BitSet(32); // Change the number to fit your required length
+
+        // Set bits in the BitSet based on the hash code
+        for (int i = 0; i < 32; i++) { // Assuming integer hash code is 32 bits
+            boolean isBitSet = ((hashCode >> i) & 1) == 1;
+            bitSet.set(i, isBitSet);
+        }
+
+
+        if (bitSet.length() < 32) {
+            bitSet.set(bitSet.length(),32,true);
+        }
+        //System.out.println(bitSet);
+        //System.out.println(bitSet.length());
+
+        return bitSet;
     }
 
     /**

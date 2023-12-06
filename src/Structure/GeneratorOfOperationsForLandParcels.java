@@ -13,7 +13,7 @@ public class GeneratorOfOperationsForLandParcels extends GeneratorOfOperations<L
 
     public GeneratorOfOperationsForLandParcels(DynamicHashing<LandParcel> parDynamicHashing) {
         super(parDynamicHashing);
-        this.generaterParciel = new CadastralObjectGenerator(1);
+        this.generaterParciel = new CadastralObjectGenerator(2);
     }
 
     @Override
@@ -25,9 +25,13 @@ public class GeneratorOfOperationsForLandParcels extends GeneratorOfOperations<L
 
         for (int i = 0; i < count; i++) {
             IRecord record = this.generaterParciel.generateLandParcel(size,range);
-            this.dynamicHashing.insert(record);
-            this.insertedRecords.add(record);
+            if(this.dynamicHashing.insert(record)) {
+                this.insertedRecords.add(record);
+            }
+
+            //System.out.println("inserted " + i + " item");
         }
+        System.out.println("Insert was success!");
     }
 
     public void insertOne(LandParcel parcel) {

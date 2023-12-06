@@ -8,10 +8,12 @@ public class ExternalNode extends Node {
 
     private int address;
     private int countOnAddress;
+    private int countOfLinkedBlocks;
 
     public ExternalNode(Node parParent) {
         this.parent = parParent;
         this.address = -1;
+        this.countOfLinkedBlocks = 0;
     }
 
     public int getAddress() {
@@ -41,5 +43,13 @@ public class ExternalNode extends Node {
     @Override
     public TypeOfNode isInstanceOf() {
         return TypeOfNode.EXTERNAL;
+    }
+
+    public int getCountOfLinkedBlocks() {
+        return countOfLinkedBlocks;
+    }
+
+    public void setCountOfLinkedBlocks(int parCountOfLinkedBlocks) {
+        this.countOfLinkedBlocks = parCountOfLinkedBlocks;
     }
 }

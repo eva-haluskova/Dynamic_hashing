@@ -1,6 +1,7 @@
 package Data.Others;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Random;
 
 import Data.*;
@@ -12,10 +13,12 @@ public class CadastralObjectGenerator {
     private Random random;
     private int realEstateId;
     private int landParcelId;
+    Date currentDate;
 
     public CadastralObjectGenerator(int seed) {
         this.random = new Random();
         this.random.setSeed(seed);
+        this.currentDate = new Date(); // Current date
     }
 
     public ArrayList<CadastralObject> generateObjects(
@@ -46,7 +49,12 @@ public class CadastralObjectGenerator {
     ) {
         //int pocetLeziacichParciel = Math.min(random.nextInt(this.landParcelId + 1),5);
         int pocetLeziacichParciel = random.nextInt(5);
-        LandParcel sa = new LandParcel(this.landParcelId, this.returnGPSOfObject(parSizeOfObject,parRangeOfGPS),"LP_" + this.landParcelId);
+
+        // Convert Date to int (representing seconds)
+        int seconds = (int) (currentDate.getTime() / 1000); // Divide by 1000 to get seconds
+
+        int o = Math.abs(this.random.nextInt());
+        LandParcel sa = new LandParcel(o, this.returnGPSOfObject(parSizeOfObject,parRangeOfGPS),"LP_" + this.landParcelId);
         // TODO ja viem ze je to zatial zle, toto je zatila ozaj len na otestovanie tvorby
         for (int i = 0; i < pocetLeziacichParciel; i++) {
             sa.addBelongingRealEstate(Math.abs(random.nextInt()));

@@ -15,17 +15,47 @@ public class Block<T extends IRecord> {
     private int countOfValidRecords;
     private int blockFactor;// comes from construstor, not need to serialze
     private int sizeOfRecord; // automatic load when creating
-    private Block nextFreeBlock;
-    private Block previousFreeBlock;
-    private Block nextLinkedBlock;
+    private int nextFreeBlock;
+    private int previousFreeBlock;
+    private int nextLinkedBlock;
 
     public Block(int parBlockFactor, Class<T> type) {
         this.listOfRecords = (T[]) new IRecord[parBlockFactor];
         this.blockFactor = parBlockFactor;
         this.type = type;
         this.sizeOfRecord = this.returnSizeOfRecord();
+        this.countOfValidRecords = 0;
+        this.nextLinkedBlock = -1;
+        this.previousFreeBlock = -1;
+        this.nextFreeBlock = -1;
     }
 
+    /**
+     * Getters and setters
+     */
+    public int getNextFreeBlock() {
+        return nextFreeBlock;
+    }
+
+    public void setNextFreeBlock(int parNextFreeBlock) {
+        this.nextFreeBlock = parNextFreeBlock;
+    }
+
+    public int getPreviousFreeBlock() {
+        return previousFreeBlock;
+    }
+
+    public void setPreviousFreeBlock(int parPreviousFreeBlock) {
+        this.previousFreeBlock = parPreviousFreeBlock;
+    }
+
+    public int getNextLinkedBlock() {
+        return nextLinkedBlock;
+    }
+
+    public void setNextLinkedBlock(int parNextLinkedBlock) {
+        this.nextLinkedBlock = parNextLinkedBlock;
+    }
 
     /**
      * Returns size of specific class that implement IRecord
@@ -54,7 +84,7 @@ public class Block<T extends IRecord> {
      * Return size of block header - so everything expect list of records
      */
     public int getSizeOfHeader() {
-        return Integer.BYTES; // zatial
+        return Integer.BYTES * 4;
     }
 
     /**
@@ -66,6 +96,9 @@ public class Block<T extends IRecord> {
 
         try {
             hlpOutStream.writeInt(this.countOfValidRecords);
+            hlpOutStream.writeInt(this.nextFreeBlock);
+            hlpOutStream.writeInt(this.previousFreeBlock);
+            hlpOutStream.writeInt(this.nextLinkedBlock);
 
             byte[] concatenatedBytes = hlpByteArrayOutputStream.toByteArray();
 
@@ -94,8 +127,10 @@ public class Block<T extends IRecord> {
         ByteArrayInputStream hlpByteArrayInputStream = new ByteArrayInputStream(header);
         DataInputStream hlpInStream = new DataInputStream(hlpByteArrayInputStream);
         try {
-
             numberOfReadRecords = hlpInStream.readInt();
+            this.nextFreeBlock = hlpInStream.readInt();
+            this.previousFreeBlock = hlpInStream.readInt();
+            this.nextLinkedBlock = hlpInStream.readInt();
         } catch (IOException e) {
             throw new IllegalStateException("Error during conversion from byte array.");
         }
@@ -214,8 +249,11 @@ public class Block<T extends IRecord> {
      * probably useless method??
      * TODO
      */
-    private void makeBlockNull() {
+    public void makeBlockNull() {
         this.countOfValidRecords = 0;
+        this.nextLinkedBlock = -1;
+        this.previousFreeBlock = -1;
+        this.nextFreeBlock = -1;
         for (IRecord act: this.listOfRecords) {
             act = null;
         }

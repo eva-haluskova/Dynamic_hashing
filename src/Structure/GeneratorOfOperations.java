@@ -21,6 +21,7 @@ public abstract class GeneratorOfOperations<T extends IRecord> {
     public IRecord find(IRecord parRecord) {
         IRecord foundRecord = this.dynamicHashing.find(parRecord);
         if (foundRecord != null) {
+            System.out.println("data finf " + foundRecord);
             return foundRecord;
         }
         return null;
