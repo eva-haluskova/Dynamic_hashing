@@ -541,12 +541,67 @@ public class DynamicHashing<T extends IRecord> {
     }
 
     public void releaseEmptyBlockInMainFile(int parAddress, Block<T> parBlock) {
-        if (this.firstEmptyBlockMainFile == -1) {
+        int addressOfSearched = this.getSizeOfMainFile()/this.getSizeOfMainBlock() - 1;
+
+        if (parAddress == addressOfSearched && parAddress == 0 && parBlock.getNextLinkedBlock() == -1) {
+            this.setSizeOfFile(this.rawMain,0);
+        } else if (parAddress == addressOfSearched) {
+            int addressToShort = addressOfSearched; // adresa kde sa skrati subor - ak je posledny prazdny tak skratim adresu po tiadlo - zatial.
+            boolean shorten = false;
+            while (!shorten) {
+                addressOfSearched--;
+                Block<T> previousBlock = this.readBlockFromFile(this.rawMain,this.mainFileBlockFactor, addressOfSearched);
+                if (previousBlock.getValidCount() == 0) {
+                    Block<T> previousOfPrevious = null;
+                    Block<T> nextOfPrevious = null;
+
+                    // load previous linked node if exists
+                    if (previousBlock.getPreviousFreeBlock() != -1) { //ak je minus jedna znamena ze je prvy v zretazeni
+                        previousOfPrevious = this.readBlockFromFile(this.rawMain, this.mainFileBlockFactor, previousBlock.getPreviousFreeBlock());
+                    }
+                    // load next linked node if exists
+                    if (previousBlock.getNextFreeBlock() != -1) { // ak je minus jedna znamena ze je posledny v zretazeni
+                        nextOfPrevious = this.readBlockFromFile(this.rawMain, this.mainFileBlockFactor, previousBlock.getNextFreeBlock());
+                    }
+
+                    if (previousOfPrevious == null && nextOfPrevious != null) {
+                        this.firstEmptyBlockMainFile = previousBlock.getNextFreeBlock();
+                        nextOfPrevious.setPreviousFreeBlock(-1);
+                    } else if (nextOfPrevious == null && previousOfPrevious != null) {
+                        previousOfPrevious.setNextFreeBlock(-1);
+                    } else if (previousOfPrevious == null && nextOfPrevious == null) {
+                        this.firstEmptyBlockMainFile = -1;
+                    } else {
+                        previousOfPrevious.setNextFreeBlock(previousBlock.getNextFreeBlock());
+                        nextOfPrevious.setPreviousFreeBlock(previousBlock.getPreviousFreeBlock());
+                    }
+
+                    if (previousOfPrevious != null) {
+                        this.writeBlockToFile(this.rawMain,previousBlock.getPreviousFreeBlock(),previousOfPrevious);
+                    }
+                    if (nextOfPrevious != null) {
+                        this.writeBlockToFile(this.rawMain,previousBlock.getNextFreeBlock(),nextOfPrevious);
+                    }
+                    if (addressOfSearched == 0) {
+                        shorten = true;
+                    }
+                    addressToShort--;
+
+                } else {
+                    shorten = true;
+                }
+            }
+            this.setSizeOfFile(this.rawMain,addressToShort);
+        } else if (this.firstEmptyBlockMainFile == -1) {
             this.firstEmptyBlockMainFile = parAddress;
+            parBlock.resetCountOfValidRecords();
+            parBlock.setNextLinkedBlock(-1);
             this.writeBlockToFile(this.rawMain, parAddress, parBlock);
         } else {
             int address = this.firstEmptyBlockMainFile;
             this.firstEmptyBlockMainFile = parAddress;
+            parBlock.resetCountOfValidRecords();
+            parBlock.setNextLinkedBlock(-1);
             parBlock.setNextFreeBlock(address);
             Block<T> nextEmpty = this.readBlockFromFile(this.rawMain,this.mainFileBlockFactor,address);
             nextEmpty.setPreviousFreeBlock(parAddress);
@@ -557,21 +612,74 @@ public class DynamicHashing<T extends IRecord> {
 
     // pay attention for atrubte zretazenie
     public void releaseEmptyBlockInOverfillingFile(int parAddress, Block<T> parBlock) {
-        if (this.firstEmptyBlockOverfillingFile == -1) {
-            this.firstEmptyBlockOverfillingFile = parAddress;
-            parBlock.resetCountOfValidRecords();
-            parBlock.setNextLinkedBlock(-1);
-            this.writeBlockToFile(this.rawOverfillFile, parAddress, parBlock);
+        int addressOfSearched = this.getSizeOfOverfillingFile()/this.getSizeOfOverfillingBlock() - 1;
+
+        if (parAddress == addressOfSearched && parAddress == 0) {
+            this.setSizeOfFile(this.rawOverfillFile,0);
+        } else if (parAddress == addressOfSearched) {
+            int addressToShort = addressOfSearched; // adresa kde sa skrati subor - ak je posledny prazdny tak skratim adresu po tiadlo - zatial.
+            boolean shorten = false;
+            while (!shorten) {
+                addressOfSearched--;
+                Block<T> previousBlock = this.readBlockFromFile(this.rawOverfillFile,this.overfillingFileBlockFactor, addressOfSearched);
+                if (previousBlock.getValidCount() == 0) {
+                    Block<T> previousOfPrevious = null;
+                    Block<T> nextOfPrevious = null;
+
+                    // load previous linked node if exists
+                    if (previousBlock.getPreviousFreeBlock() != -1) { //ak je minus jedna znamena ze je prvy v zretazeni
+                        previousOfPrevious = this.readBlockFromFile(this.rawOverfillFile, this.overfillingFileBlockFactor, previousBlock.getPreviousFreeBlock());
+                    }
+                    // load next linked node if exists
+                    if (previousBlock.getNextFreeBlock() != -1) { // ak je minus jedna znamena ze je posledny v zretazeni
+                        nextOfPrevious = this.readBlockFromFile(this.rawOverfillFile, this.overfillingFileBlockFactor, previousBlock.getNextFreeBlock());
+                    }
+
+                    if (previousOfPrevious == null && nextOfPrevious != null) {
+                        this.firstEmptyBlockOverfillingFile = previousBlock.getNextFreeBlock();
+                        nextOfPrevious.setPreviousFreeBlock(-1);
+                    } else if (nextOfPrevious == null && previousOfPrevious != null) {
+                        previousOfPrevious.setNextFreeBlock(-1);
+                    } else if (previousOfPrevious == null && nextOfPrevious == null) {
+                        this.firstEmptyBlockOverfillingFile = -1;
+                    } else {
+                        previousOfPrevious.setNextFreeBlock(previousBlock.getNextFreeBlock());
+                        nextOfPrevious.setPreviousFreeBlock(previousBlock.getPreviousFreeBlock());
+                    }
+
+                    if (previousOfPrevious != null) {
+                        this.writeBlockToFile(this.rawOverfillFile,previousBlock.getPreviousFreeBlock(),previousOfPrevious);
+                    }
+                    if (nextOfPrevious != null) {
+                        this.writeBlockToFile(this.rawOverfillFile,previousBlock.getNextFreeBlock(),nextOfPrevious);
+                    }
+                    if (addressOfSearched == 0) {
+                        shorten = true;
+                    }
+                        addressToShort--;
+
+                } else {
+                    shorten = true;
+                }
+            }
+            this.setSizeOfFile(this.rawOverfillFile,addressToShort);
         } else {
-            int address = this.firstEmptyBlockOverfillingFile;
-            this.firstEmptyBlockOverfillingFile = parAddress;
-            parBlock.resetCountOfValidRecords();
-            parBlock.setNextLinkedBlock(-1);
-            parBlock.setNextFreeBlock(address);
-            Block<T> nextEmpty = this.readBlockFromFile(this.rawOverfillFile,this.overfillingFileBlockFactor,address);
-            nextEmpty.setPreviousFreeBlock(parAddress);
-            this.writeBlockToFile(this.rawOverfillFile, address, nextEmpty);
-            this.writeBlockToFile(this.rawOverfillFile,parAddress,parBlock);
+            if (this.firstEmptyBlockOverfillingFile == -1) {
+                this.firstEmptyBlockOverfillingFile = parAddress;
+                parBlock.resetCountOfValidRecords();
+                parBlock.setNextLinkedBlock(-1);
+                this.writeBlockToFile(this.rawOverfillFile, parAddress, parBlock);
+            } else {
+                int address = this.firstEmptyBlockOverfillingFile;
+                this.firstEmptyBlockOverfillingFile = parAddress;
+                parBlock.resetCountOfValidRecords();
+                parBlock.setNextLinkedBlock(-1);
+                parBlock.setNextFreeBlock(address);
+                Block<T> nextEmpty = this.readBlockFromFile(this.rawOverfillFile, this.overfillingFileBlockFactor, address);
+                nextEmpty.setPreviousFreeBlock(parAddress);
+                this.writeBlockToFile(this.rawOverfillFile, address, nextEmpty);
+                this.writeBlockToFile(this.rawOverfillFile, parAddress, parBlock);
+            }
         }
     }
 
@@ -590,7 +698,7 @@ public class DynamicHashing<T extends IRecord> {
         }
     }
 
-    private int getSizeOfMainFile() {
+    public int getSizeOfMainFile() {
         try {
             return Math.round(this.rawMain.length());
         } catch (IOException e) {
@@ -599,13 +707,21 @@ public class DynamicHashing<T extends IRecord> {
         return -1;
     }
 
-    private int getSizeOfOverfillingFile() {
+    public int getSizeOfOverfillingFile() {
         try {
             return Math.round(this.rawOverfillFile.length());
         } catch (IOException e) {
             e.printStackTrace();
         }
         return -1;
+    }
+
+    private void setSizeOfFile(RandomAccessFile parFile,int parAddressForShortInBlocks) {
+        try {
+            parFile.setLength(new Long(parAddressForShortInBlocks * this.getSizeOfOverfillingBlock()));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private int getSizeOfMainBlock() {
@@ -746,6 +862,7 @@ public class DynamicHashing<T extends IRecord> {
         }
         return size;
     }
+
 
 
 }
