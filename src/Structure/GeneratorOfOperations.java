@@ -62,6 +62,7 @@ public abstract class GeneratorOfOperations<T extends IRecord> {
 
     public void delete() {
         for (int i = 0; i < this.insertedRecords.size(); i++) {
+            //System.out.println("deletujem " + i + " prvok " + this.insertedRecords.get(i));
             this.dynamicHashing.delete(this.insertedRecords.get(i));
         }
         System.out.println("probably success delete!!");

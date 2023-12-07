@@ -306,9 +306,38 @@ public class DynamicHashing<T extends IRecord> {
                 } else {
                     this.deleteRecord(parRecord,this.mainFileBlockFactor,((ExternalNode) current).getAddress(),this.rawMain);
                     ((ExternalNode) current).decreaseCountOnAddress();
+
+                    // reducation
                     if (this.tryToReduce(((ExternalNode) current))) {
                         this.reduce(((ExternalNode) current));
                     }
+
+                    // merge
+                    int countInBrother = -1;
+                    if (((InternalNode) current.getParent()).getLeftSon().equals(current)) {
+                        if (((ExternalNode)((InternalNode) current.getParent()).getRightSon()).getCountOfLinkedBlocks() == -1) {
+                            countInBrother = ((ExternalNode)((InternalNode) current.getParent()).getRightSon()).getCountOnAddress();
+                        }
+                    } else {
+                        if (((ExternalNode)((InternalNode) current.getParent()).getLeftSon()).getCountOfLinkedBlocks() == -1) {
+                            countInBrother = ((ExternalNode)((InternalNode) current.getParent()).getLeftSon()).getCountOnAddress();
+                        }
+                    }
+
+                    int countInMe = -1;
+                    if ( ((ExternalNode) current).getCountOfLinkedBlocks() == -1 ) {
+                        countInMe = ((ExternalNode) current).getCountOnAddress();
+                    }
+
+                    if (countInMe != -1 && countInBrother != -1 &&
+                            countInMe + countInBrother < this.mainFileBlockFactor) {
+
+                    }
+
+
+
+
+
                     foundedNode = true;
                 }
             }
@@ -682,6 +711,21 @@ public class DynamicHashing<T extends IRecord> {
             }
         }
     }
+
+    /**
+     * if count of item into two brother nodes are lower than block factor - merge them into one node
+     */
+    /*
+    na zaver zavoláš metodu na merg - kukneš sa pri delete do seba - či počet zretazenych blokov je 0
+    (pozri si či toti máš dobre pošefene)  a či počet zretazenych brata je tiež nula a či dokopy súčet
+    sa je menší ako blockfactor. Ak je - zobereš data z jedného a pridás do druhého bez žiadnych okolkov.
+    Bereš toho ktorý má menšie adresu :D druhu adresu uvolniš. Robíš cyklicky nahor
+     */
+    public void merge() {
+
+    }
+
+
 
     /**
      * some useful private methods
