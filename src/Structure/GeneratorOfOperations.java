@@ -64,7 +64,7 @@ public abstract class GeneratorOfOperations<T extends IRecord> {
         for (int i = 0; i < this.insertedRecords.size(); i++) {
             this.dynamicHashing.delete(this.insertedRecords.get(i));
         }
-
+        System.out.println("probably success delete!!");
     }
 
     public boolean checkIfTheyAreSme(ArrayList<IRecord> arrayToCompare) {
@@ -99,6 +99,10 @@ public abstract class GeneratorOfOperations<T extends IRecord> {
             System.out.println("They are not same! :(");
             return false;
         }
+    }
+
+    public int sizeOfTrie() {
+        return this.insertedRecords.size();
     }
 
 

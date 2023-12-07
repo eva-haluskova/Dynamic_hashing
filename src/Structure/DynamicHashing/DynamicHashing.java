@@ -5,9 +5,7 @@ import Structure.DynamicHashing.Nodes.InternalNode;
 import Structure.DynamicHashing.Nodes.Node;
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.util.ArrayList;
-import java.util.BitSet;
-import java.util.Iterator;
+import java.util.*;
 
 public class DynamicHashing<T extends IRecord> {
 
@@ -54,9 +52,7 @@ public class DynamicHashing<T extends IRecord> {
                 index++;
             } else {
                 if (((ExternalNode) current).getAddress() != -1) {
-                    //record = this.findRecordInBlock(parRecord, this.mainFileBlockFactor, ((ExternalNode) current).getAddress(), this.rawMain);
                     record = this.findRecord(parRecord, this.mainFileBlockFactor, ((ExternalNode) current).getAddress(), this.rawMain);
-                    System.out.println("nasla som dato: " + parRecord);
                     foundedNode = true;
                 } else {
                     return null;
@@ -310,9 +306,36 @@ public class DynamicHashing<T extends IRecord> {
                 } else {
                     this.deleteRecord(parRecord,this.mainFileBlockFactor,((ExternalNode) current).getAddress(),this.rawMain);
                     ((ExternalNode) current).decreaseCountOnAddress();
+                    if (this.tryToReduce(((ExternalNode) current))) {
+                        this.reduce(((ExternalNode) current));
+                    }
                     foundedNode = true;
                 }
             }
+        }
+    }
+
+    /*
+    striasanie - pri detele zavolam metodu tryToReduce - ktorá vyhodnoti či v danom node - kedze v delete
+    traverzujes MAS ten node, a pozrieš sa či countOnAddress/ BlockFactor je mensi ako pocetZretazenych.
+    Ak ano, sprvais strasanis. len si vyberes vserky data z daneho bloku - aj so zretazením , pridás si tam
+    taku metodku, no a  potom bud - do povodnych blokov pozapisujs data postupne alebo vytvoris nove bloky
+    a do nich...len musíš pamätať na tie uvolnene bloky...aby boli uvolnene...ano. takro. Ubolnis si všekty
+    tie bloky a potom do novych - ktore ti vrátia adresy tiero staré - pozapisuješ nove data.
+     */
+
+    public boolean tryToReduce(ExternalNode parNode) {
+        return ((parNode.getCountOfLinkedBlocks() - 1) * this.overfillingFileBlockFactor +
+                this.mainFileBlockFactor) >= parNode.getCountOnAddress();
+    }
+
+    public void reduce(ExternalNode parNode) {
+        ArrayList<IRecord> dataToInsert = this.returnAllDataFromLinkedBlocks(parNode.getAddress());
+        this.removeLinkedBlocks(parNode.getAddress());
+        parNode.setCountOfLinkedBlocks(0);
+        parNode.setCountOnAddress(0);
+        for (int i = 0; i < dataToInsert.size(); i++) {
+            this.insert(dataToInsert.get(i));
         }
     }
 
@@ -365,7 +388,6 @@ public class DynamicHashing<T extends IRecord> {
     public void deleteRecordFromBlock(IRecord parDataToDelete, int parBlockFactor, int parAddressToSeek, RandomAccessFile parFile) {
         Block<T> block = this.readBlockFromFile(parFile, parBlockFactor, parAddressToSeek);
         block.deleteRecord(parDataToDelete);
-        System.out.println("data " + parDataToDelete + " are deleted");
         this.writeBlockToFile(parFile,parAddressToSeek,block);
     }
 
@@ -395,12 +417,43 @@ public class DynamicHashing<T extends IRecord> {
         this.writeBlockToFile(parFile, parAddressToSeek, block);
     }
 
+    /**
+     * method used when reduce...salalal TODO
+     */
+    public ArrayList<IRecord> returnAllDataFromLinkedBlocks(int parAddressToSeek) {
+        ArrayList<IRecord> listOfData = new ArrayList<>();
+        listOfData.addAll(returnAllDataFromBlock(parAddressToSeek, this.mainFileBlockFactor, this.rawMain));
+
+        Block<T> block = this.readBlockFromFile(this.rawMain, this.mainFileBlockFactor, parAddressToSeek);
+        while (block.getNextLinkedBlock() != -1) {
+            listOfData.addAll(returnAllDataFromBlock(block.getNextLinkedBlock(),this.overfillingFileBlockFactor,this.rawOverfillFile));
+            block = this.readBlockFromFile(this.rawOverfillFile, this.overfillingFileBlockFactor,block.getNextLinkedBlock());
+        }
+        return listOfData;
+    }
+
+    /**
+     * method deletes linked block in overfilling file and remove records in block in main file.
+     */
+    public void removeLinkedBlocks(int parAddress) {
+        Block<T> block = this.readBlockFromFile(this.rawMain,this.mainFileBlockFactor,parAddress);
+        block.resetCountOfValidRecords();
+        int address = block.getNextLinkedBlock();
+        block.setNextLinkedBlock(-1);
+        this.writeBlockToFile(this.rawMain, parAddress, block);
+
+        while (address != -1) {
+            block = this.readBlockFromFile(this.rawOverfillFile, this.overfillingFileBlockFactor, address);
+            int aktadr = address;
+            address = block.getNextLinkedBlock();
+            this.releaseEmptyBlockInOverfillingFile(aktadr,block); // tu sa aj nastavuje hodnota zretazenia a aj VC
+        }
+    }
+
     private ArrayList<IRecord> returnAllDataFromBlock(int parAddressToSeek, int parBlockFactor, RandomAccessFile parFile) {
         Block<T> block = this.readBlockFromFile(parFile, parBlockFactor, parAddressToSeek);
         return block.returnValidRecordsAsArray();
     }
-
-
 
     /**
      * work with file - writing, reading, closing
@@ -506,10 +559,14 @@ public class DynamicHashing<T extends IRecord> {
     public void releaseEmptyBlockInOverfillingFile(int parAddress, Block<T> parBlock) {
         if (this.firstEmptyBlockOverfillingFile == -1) {
             this.firstEmptyBlockOverfillingFile = parAddress;
+            parBlock.resetCountOfValidRecords();
+            parBlock.setNextLinkedBlock(-1);
             this.writeBlockToFile(this.rawOverfillFile, parAddress, parBlock);
         } else {
             int address = this.firstEmptyBlockOverfillingFile;
             this.firstEmptyBlockOverfillingFile = parAddress;
+            parBlock.resetCountOfValidRecords();
+            parBlock.setNextLinkedBlock(-1);
             parBlock.setNextFreeBlock(address);
             Block<T> nextEmpty = this.readBlockFromFile(this.rawOverfillFile,this.overfillingFileBlockFactor,address);
             nextEmpty.setPreviousFreeBlock(parAddress);
@@ -652,5 +709,43 @@ public class DynamicHashing<T extends IRecord> {
             }
         }
     }
+
+    /**
+     * Return number of items inserted into tree
+     */
+    public int size() {
+        if (this.root == null) {
+            return 0;
+        }
+
+        Queue<Node> queue = new LinkedList<>();
+        queue.offer(root);
+
+        int size = 0;
+
+        while (!queue.isEmpty()) {
+            int levelSize = queue.size();
+
+            for (int i = 0; i < levelSize; i++) {
+                Node current = queue.poll();
+
+                if (current.isInstanceOf().equals(Node.TypeOfNode.EXTERNAL)) {
+                    size += ((ExternalNode) current).getCountOnAddress();
+                }
+
+                if (current.isInstanceOf().equals(Node.TypeOfNode.INTERNAL)) {
+
+                    if (((InternalNode) current).getLeftSon() != null) {
+                        queue.offer(((InternalNode) current).getLeftSon());
+                    }
+                    if (((InternalNode) current).getRightSon() != null) {
+                        queue.offer(((InternalNode) current).getRightSon());
+                    }
+                }
+            }
+        }
+        return size;
+    }
+
 
 }
