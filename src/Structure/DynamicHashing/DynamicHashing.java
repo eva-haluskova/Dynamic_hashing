@@ -216,16 +216,16 @@ public class DynamicHashing<T extends IRecord> {
 
                         if (!dataToInsert.isEmpty()) {
                             if (newExtNode.getCountOnAddress() == 0) {
-
+                                this.writeBlockToFile(this.rawMain,((ExternalNode)current).getAddress(),blockCur);
                                 this.releaseEmptyBlockInMainFile(newExtNode.getAddress(), blockNew);
                                 newExtNode.setAddress(-1);
-                                this.writeBlockToFile(this.rawMain,((ExternalNode)current).getAddress(),blockCur);
+                                // ten prvy riadok bol tu
                             }
                             if (((ExternalNode) current).getCountOnAddress() == 0) {
-
+                                this.writeBlockToFile(this.rawMain,newExtNode.getAddress(),blockNew);
                                 this.releaseEmptyBlockInMainFile(((ExternalNode) current).getAddress(),blockCur);
                                 ((ExternalNode) current).setAddress(-1);
-                                this.writeBlockToFile(this.rawMain,newExtNode.getAddress(),blockNew);
+                                // ten prvy riadok bol tu
                                 current = newExtNode;
                             }
                         } else {
@@ -258,7 +258,6 @@ public class DynamicHashing<T extends IRecord> {
             Block<T> nextBlock = this.readBlockFromFile(this.rawOverfillFile,this.overfillingFileBlockFactor,block.getNextLinkedBlock());
             int addressOfNextPrevious = block.getNextLinkedBlock();
             while(nextBlock.getNextLinkedBlock() != -1) {
-                //System.out.println("asi som sa tu zasekla");
                 addressOfNextPrevious = nextBlock.getNextLinkedBlock();
                 nextBlock = this.readBlockFromFile(this.rawOverfillFile,this.overfillingFileBlockFactor, nextBlock.getNextLinkedBlock());
             }
@@ -313,45 +312,43 @@ public class DynamicHashing<T extends IRecord> {
                     }
 
                     // merge
-                    int countInBrother = -1;
-                    if (((InternalNode) current.getParent()).getLeftSon().equals(current)) {
-                        if (((ExternalNode)((InternalNode) current.getParent()).getRightSon()).getCountOfLinkedBlocks() == -1) {
-                            countInBrother = ((ExternalNode)((InternalNode) current.getParent()).getRightSon()).getCountOnAddress();
-                        }
-                    } else {
-                        if (((ExternalNode)((InternalNode) current.getParent()).getLeftSon()).getCountOfLinkedBlocks() == -1) {
-                            countInBrother = ((ExternalNode)((InternalNode) current.getParent()).getLeftSon()).getCountOnAddress();
-                        }
-                    }
-
-                    int countInMe = -1;
-                    if ( ((ExternalNode) current).getCountOfLinkedBlocks() == -1 ) {
-                        countInMe = ((ExternalNode) current).getCountOnAddress();
-                    }
-
-                    if (countInMe != -1 && countInBrother != -1 &&
-                            countInMe + countInBrother < this.mainFileBlockFactor) {
-
-                    }
-
-
-
-
+//                    int countInBrother = -1;
+//                    if (((InternalNode) current.getParent()).getLeftSon().equals(current)) {
+//                        if (((InternalNode) current.getParent()).getRightSon().isInstanceOf().equals(Node.TypeOfNode.EXTERNAL)) {
+//                            if (((ExternalNode) ((InternalNode) current.getParent()).getRightSon()).getCountOfLinkedBlocks() == 0 &&
+//                                    ((ExternalNode) ((InternalNode) current.getParent()).getRightSon()).getAddress() != -1) {
+//                                countInBrother = ((ExternalNode) ((InternalNode) current.getParent()).getRightSon()).getCountOnAddress();
+//                            }
+//                        }
+//                    } else {
+//                        if (((InternalNode) current.getParent()).getLeftSon().isInstanceOf().equals(Node.TypeOfNode.EXTERNAL)) {
+//                            if (((ExternalNode) ((InternalNode) current.getParent()).getLeftSon()).getCountOfLinkedBlocks() == 0 &&
+//                                    ((ExternalNode) ((InternalNode) current.getParent()).getLeftSon()).getAddress() != -1) {
+//                                countInBrother = ((ExternalNode) ((InternalNode) current.getParent()).getLeftSon()).getCountOnAddress();
+//                            }
+//                        }
+//                    }
+//                    int countInMe = -1;
+//                    if ( ((ExternalNode) current).getCountOfLinkedBlocks() == 0 ) {
+//                        countInMe = ((ExternalNode) current).getCountOnAddress();
+//                    }
+//                    if (countInMe != -1 && countInBrother != -1 &&
+//                            countInMe + countInBrother < this.mainFileBlockFactor) {
+//                        ExternalNode brother;
+//                        if (((InternalNode) current.getParent()).getLeftSon().equals(current)) {
+//                            brother = ((ExternalNode)((InternalNode) current.getParent()).getRightSon());
+//                        } else {
+//                            brother = ((ExternalNode)((InternalNode) current.getParent()).getLeftSon());
+//                        }
+//                        //this.merge(((ExternalNode) current), brother);
+//                        ((ExternalNode) current).setCountOnAddress(countInMe + countInBrother);
+//                    }
 
                     foundedNode = true;
                 }
             }
         }
     }
-
-    /*
-    striasanie - pri detele zavolam metodu tryToReduce - ktorá vyhodnoti či v danom node - kedze v delete
-    traverzujes MAS ten node, a pozrieš sa či countOnAddress/ BlockFactor je mensi ako pocetZretazenych.
-    Ak ano, sprvais strasanis. len si vyberes vserky data z daneho bloku - aj so zretazením , pridás si tam
-    taku metodku, no a  potom bud - do povodnych blokov pozapisujs data postupne alebo vytvoris nove bloky
-    a do nich...len musíš pamätať na tie uvolnene bloky...aby boli uvolnene...ano. takro. Ubolnis si všekty
-    tie bloky a potom do novych - ktore ti vrátia adresy tiero staré - pozapisuješ nove data.
-     */
 
     public boolean tryToReduce(ExternalNode parNode) {
         return ((parNode.getCountOfLinkedBlocks() - 1) * this.overfillingFileBlockFactor +
@@ -378,10 +375,7 @@ public class DynamicHashing<T extends IRecord> {
             return true;
         }
         return false;
-
-
     }
-
 
     private IRecord findRecordInBlock(IRecord parDataToFind,int parBlockFactor, int parAddressToSeek, RandomAccessFile parFile) {
         Block<T> block = this.readBlockFromFile(parFile, parBlockFactor, parAddressToSeek);
@@ -447,7 +441,7 @@ public class DynamicHashing<T extends IRecord> {
     }
 
     /**
-     * method used when reduce...salalal TODO
+     * method used when reduce
      */
     public ArrayList<IRecord> returnAllDataFromLinkedBlocks(int parAddressToSeek) {
         ArrayList<IRecord> listOfData = new ArrayList<>();
@@ -570,73 +564,75 @@ public class DynamicHashing<T extends IRecord> {
     }
 
     public void releaseEmptyBlockInMainFile(int parAddress, Block<T> parBlock) {
-        int addressOfSearched = this.getSizeOfMainFile()/this.getSizeOfMainBlock() - 1;
-
-        if (parAddress == addressOfSearched && parAddress == 0 && parBlock.getNextLinkedBlock() == -1) {
-            this.setSizeOfFile(this.rawMain,0);
-        } else if (parAddress == addressOfSearched) {
-            int addressToShort = addressOfSearched; // adresa kde sa skrati subor - ak je posledny prazdny tak skratim adresu po tiadlo - zatial.
-            boolean shorten = false;
-            while (!shorten) {
-                addressOfSearched--;
-                Block<T> previousBlock = this.readBlockFromFile(this.rawMain,this.mainFileBlockFactor, addressOfSearched);
-                if (previousBlock.getValidCount() == 0) {
-                    Block<T> previousOfPrevious = null;
-                    Block<T> nextOfPrevious = null;
-
-                    // load previous linked node if exists
-                    if (previousBlock.getPreviousFreeBlock() != -1) { //ak je minus jedna znamena ze je prvy v zretazeni
-                        previousOfPrevious = this.readBlockFromFile(this.rawMain, this.mainFileBlockFactor, previousBlock.getPreviousFreeBlock());
-                    }
-                    // load next linked node if exists
-                    if (previousBlock.getNextFreeBlock() != -1) { // ak je minus jedna znamena ze je posledny v zretazeni
-                        nextOfPrevious = this.readBlockFromFile(this.rawMain, this.mainFileBlockFactor, previousBlock.getNextFreeBlock());
-                    }
-
-                    if (previousOfPrevious == null && nextOfPrevious != null) {
-                        this.firstEmptyBlockMainFile = previousBlock.getNextFreeBlock();
-                        nextOfPrevious.setPreviousFreeBlock(-1);
-                    } else if (nextOfPrevious == null && previousOfPrevious != null) {
-                        previousOfPrevious.setNextFreeBlock(-1);
-                    } else if (previousOfPrevious == null && nextOfPrevious == null) {
-                        this.firstEmptyBlockMainFile = -1;
-                    } else {
-                        previousOfPrevious.setNextFreeBlock(previousBlock.getNextFreeBlock());
-                        nextOfPrevious.setPreviousFreeBlock(previousBlock.getPreviousFreeBlock());
-                    }
-
-                    if (previousOfPrevious != null) {
-                        this.writeBlockToFile(this.rawMain,previousBlock.getPreviousFreeBlock(),previousOfPrevious);
-                    }
-                    if (nextOfPrevious != null) {
-                        this.writeBlockToFile(this.rawMain,previousBlock.getNextFreeBlock(),nextOfPrevious);
-                    }
-                    if (addressOfSearched == 0) {
-                        shorten = true;
-                    }
-                    addressToShort--;
-
-                } else {
-                    shorten = true;
-                }
-            }
-            this.setSizeOfFile(this.rawMain,addressToShort);
-        } else if (this.firstEmptyBlockMainFile == -1) {
-            this.firstEmptyBlockMainFile = parAddress;
-            parBlock.resetCountOfValidRecords();
-            parBlock.setNextLinkedBlock(-1);
-            this.writeBlockToFile(this.rawMain, parAddress, parBlock);
-        } else {
-            int address = this.firstEmptyBlockMainFile;
-            this.firstEmptyBlockMainFile = parAddress;
-            parBlock.resetCountOfValidRecords();
-            parBlock.setNextLinkedBlock(-1);
-            parBlock.setNextFreeBlock(address);
-            Block<T> nextEmpty = this.readBlockFromFile(this.rawMain,this.mainFileBlockFactor,address);
-            nextEmpty.setPreviousFreeBlock(parAddress);
-            this.writeBlockToFile(this.rawMain, address, nextEmpty);
-            this.writeBlockToFile(this.rawMain,parAddress,parBlock);
+//        int addressOfSearched = this.getSizeOfMainFile()/this.getSizeOfMainBlock() - 1;
+//
+//        if (parAddress == addressOfSearched && parAddress == 0 && parBlock.getNextLinkedBlock() == -1) {
+//            this.setSizeOfFile(this.rawMain,0);
+//        } else if (parAddress == addressOfSearched) {
+//            int addressToShort = addressOfSearched; // adresa kde sa skrati subor - ak je posledny prazdny tak skratim adresu po tiadlo - zatial.
+//            boolean shorten = false;
+//            while (!shorten) {
+//                addressOfSearched--;
+//                Block<T> previousBlock = this.readBlockFromFile(this.rawMain,this.mainFileBlockFactor, addressOfSearched);
+//                if (previousBlock.getValidCount() == 0) {
+//                    Block<T> previousOfPrevious = null;
+//                    Block<T> nextOfPrevious = null;
+//
+//                    // load previous linked node if exists
+//                    if (previousBlock.getPreviousFreeBlock() != -1) { //ak je minus jedna znamena ze je prvy v zretazeni
+//                        previousOfPrevious = this.readBlockFromFile(this.rawMain, this.mainFileBlockFactor, previousBlock.getPreviousFreeBlock());
+//                    }
+//                    // load next linked node if exists
+//                    if (previousBlock.getNextFreeBlock() != -1) { // ak je minus jedna znamena ze je posledny v zretazeni
+//                        nextOfPrevious = this.readBlockFromFile(this.rawMain, this.mainFileBlockFactor, previousBlock.getNextFreeBlock());
+//                    }
+//
+//                    if (previousOfPrevious == null && nextOfPrevious != null) {
+//                        this.firstEmptyBlockMainFile = previousBlock.getNextFreeBlock();
+//                        nextOfPrevious.setPreviousFreeBlock(-1);
+//                    } else if (nextOfPrevious == null && previousOfPrevious != null) {
+//                        previousOfPrevious.setNextFreeBlock(-1);
+//                    } else if (previousOfPrevious == null && nextOfPrevious == null) {
+//                        this.firstEmptyBlockMainFile = -1;
+//                    } else {
+//                        previousOfPrevious.setNextFreeBlock(previousBlock.getNextFreeBlock());
+//                        nextOfPrevious.setPreviousFreeBlock(previousBlock.getPreviousFreeBlock());
+//                    }
+//
+//                    if (previousOfPrevious != null) {
+//                        this.writeBlockToFile(this.rawMain,previousBlock.getPreviousFreeBlock(),previousOfPrevious);
+//                    }
+//                    if (nextOfPrevious != null) {
+//                        this.writeBlockToFile(this.rawMain,previousBlock.getNextFreeBlock(),nextOfPrevious);
+//                    }
+//                    if (addressOfSearched == 0) {
+//                        shorten = true;
+//                    }
+//                    addressToShort--;
+//
+//                } else {
+//                    shorten = true;
+//                }
+//            }
+//            this.setSizeOfFile(this.rawMain,addressToShort);
+//}        else
+                if (this.firstEmptyBlockMainFile == -1) {
+                this.firstEmptyBlockMainFile = parAddress;
+                parBlock.resetCountOfValidRecords();
+                parBlock.setNextLinkedBlock(-1);
+                this.writeBlockToFile(this.rawMain, parAddress, parBlock);
+            } else {
+                int address = this.firstEmptyBlockMainFile;
+                this.firstEmptyBlockMainFile = parAddress;
+                parBlock.resetCountOfValidRecords();
+                parBlock.setNextLinkedBlock(-1);
+                parBlock.setNextFreeBlock(address);
+                Block<T> nextEmpty = this.readBlockFromFile(this.rawMain,this.mainFileBlockFactor,address);
+                nextEmpty.setPreviousFreeBlock(parAddress);
+                this.writeBlockToFile(this.rawMain, address, nextEmpty);
+                this.writeBlockToFile(this.rawMain,parAddress,parBlock);
         }
+
     }
 
     // pay attention for atrubte zretazenie
@@ -715,17 +711,31 @@ public class DynamicHashing<T extends IRecord> {
     /**
      * if count of item into two brother nodes are lower than block factor - merge them into one node
      */
-    /*
-    na zaver zavoláš metodu na merg - kukneš sa pri delete do seba - či počet zretazenych blokov je 0
-    (pozri si či toti máš dobre pošefene)  a či počet zretazenych brata je tiež nula a či dokopy súčet
-    sa je menší ako blockfactor. Ak je - zobereš data z jedného a pridás do druhého bez žiadnych okolkov.
-    Bereš toho ktorý má menšie adresu :D druhu adresu uvolniš. Robíš cyklicky nahor
-     */
-    public void merge() {
+    public void merge(ExternalNode parMe, ExternalNode parBrother) {
 
+        // nastavenie novych smernikov
+        InternalNode parent = (InternalNode) parMe.getParent();
+        InternalNode grantParent = (InternalNode)parent.getParent();
+        if (grantParent.getLeftSon().equals(parent)) {
+            grantParent.setLeftSon(parMe);
+        } else {
+            grantParent.setRightSon(parMe);
+        }
+        parMe.setParent(grantParent);
+
+        // prehodenie dat, mazanie bloku
+        Block<T> meBlock = this.readBlockFromFile(this.rawMain,this.mainFileBlockFactor,parMe.getAddress());
+        Block<T> brotherBlock = this.readBlockFromFile(this.rawMain,this.mainFileBlockFactor, parBrother.getAddress());
+
+        ArrayList<IRecord> brothersRecords = brotherBlock.returnValidRecordsAsArray();
+        brotherBlock.resetCountOfValidRecords(); // tu uz predokladam ze adresa  od prelpmovaku je nulova
+        this.releaseEmptyBlockInMainFile(parBrother.getAddress(),brotherBlock);
+
+        for (int i = 0; i < brothersRecords.size(); i++) {
+            meBlock.insertRecord(brothersRecords.get(i));
+        }
+        this.writeBlockToFile(this.rawMain,this.mainFileBlockFactor,meBlock);
     }
-
-
 
     /**
      * some useful private methods
@@ -781,14 +791,6 @@ public class DynamicHashing<T extends IRecord> {
     /**
      * Returning data from the whole trie
      */
-//    public ArrayList<IRecord> returnAllRecords(RandomAccessFile parFile, int parFileSize, int parBlockSize) {
-//        ArrayList<IRecord> dataToReturn = new ArrayList<>();
-//        for (int i = 0; i < parFileSize/parBlockSize; i++) {
-//            dataToReturn.addAll(this.returnAllDataFromBlock(i,parFile));
-//        }
-//        return dataToReturn;
-//    }
-
     public ArrayList<IRecord> returnAllRecords() {
         ArrayList<IRecord> dataToReturn = new ArrayList<>();
         for (int i = 0; i < this.getSizeOfMainFile()/this.getSizeOfMainBlock(); i++) {
@@ -810,20 +812,6 @@ public class DynamicHashing<T extends IRecord> {
     /**
      * print on console containing block sequential
      */
-//    public void returnSequenceStringOutput(RandomAccessFile parFile, int parFileSize, int parBlockSize) {
-//        for (int i = 0; i < parFileSize/parBlockSize; i++) {
-//            System.out.println("Block number " + i);
-//            ArrayList<IRecord> dataToReturn = new ArrayList<>();
-//            dataToReturn.addAll(returnAllDataFromBlock(i, parFile));
-//            if (!dataToReturn.isEmpty()) {
-//                for (int j = 0; j < dataToReturn.size(); j++) {
-//                    System.out.println(dataToReturn.get(j));
-//                }
-//            } else {
-//                System.out.println("Invalid block");
-//            }
-//        }
-//    }
     public void returnSequenceStringOutput() {
         for (int i = 0; i < this.getSizeOfMainFile()/this.getSizeOfMainBlock(); i++) {
             System.out.println("Block number " + i);
@@ -906,7 +894,5 @@ public class DynamicHashing<T extends IRecord> {
         }
         return size;
     }
-
-
 
 }

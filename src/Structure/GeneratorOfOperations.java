@@ -62,10 +62,11 @@ public abstract class GeneratorOfOperations<T extends IRecord> {
 
     public void delete() {
         for (int i = 0; i < this.insertedRecords.size(); i++) {
-            //System.out.println("deletujem " + i + " prvok " + this.insertedRecords.get(i));
             this.dynamicHashing.delete(this.insertedRecords.get(i));
         }
-        System.out.println("probably success delete!!");
+        if (this.dynamicHashing.size() == 0) {
+            System.out.println("delete was success");
+        }
     }
 
     public boolean checkIfTheyAreSme(ArrayList<IRecord> arrayToCompare) {
