@@ -14,6 +14,7 @@ public class ExternalNode extends Node {
         this.parent = parParent;
         this.address = -1;
         this.countOfLinkedBlocks = 0;
+        this.countOnAddress = 0;
     }
 
     public int getAddress() {

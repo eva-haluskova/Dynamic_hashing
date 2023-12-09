@@ -33,10 +33,10 @@ public abstract class GeneratorOfOperations<T extends IRecord> {
 
     public boolean findAllInserted() {
 
-//        System.out.println("Vsetky data ktore som inzertovala: ");
-//        for (int i = 0; i < this.insertedRecords.size(); i++) {
-//            System.out.println(this.insertedRecords.get(i));
-//        }
+        System.out.println("Vsetky data ktore som inzertovala: ");
+        for (int i = 0; i < this.insertedRecords.size(); i++) {
+            System.out.println(this.insertedRecords.get(i));
+        }
 
         ArrayList<IRecord> foundArray = new ArrayList<>();
         for (IRecord act : this.insertedRecords) {
@@ -46,10 +46,10 @@ public abstract class GeneratorOfOperations<T extends IRecord> {
             }
         }
 
-//        System.out.println("Vsetky data ktore som nasla podla findu v trie: ");
-//        for (int i = 0; i < foundArray.size(); i++) {
-//            System.out.println(foundArray.get(i));
-//        }
+        System.out.println("Vsetky data ktore som nasla podla findu v trie: ");
+        for (int i = 0; i < foundArray.size(); i++) {
+            System.out.println(foundArray.get(i));
+        }
 
         if (foundArray.containsAll(this.insertedRecords) && foundArray.size() == this.insertedRecords.size()) {
             System.out.println("Find of all items was success!!");
@@ -63,6 +63,20 @@ public abstract class GeneratorOfOperations<T extends IRecord> {
     public void delete() {
         for (int i = 0; i < this.insertedRecords.size(); i++) {
             this.dynamicHashing.delete(this.insertedRecords.get(i));
+          //  dynamicHashing.returnSequenceStringOutputWithOverfillingFilesAndBlocks();
+//            System.out.print("zoznam zretazencyh: ");
+//            ArrayList<Integer> linked = this.dynamicHashing.returnListOfEmptyBlocksMainFile();
+//            for (int j = 0; j < linked.size(); j++) {
+//                System.out.print(linked.get(j) + " ");
+//            }
+//            System.out.println();
+//
+//            System.out.print("zoznam zretazencyh: ");
+//            ArrayList<Integer> linkedpr = this.dynamicHashing.returnListOfEmptyBlocksOverfillingFile();
+//            for (int j = 0; j < linkedpr.size(); j++) {
+//                System.out.print(linkedpr.get(j) + " ");
+//            }
+//            System.out.println();
         }
         if (this.dynamicHashing.size() == 0) {
             System.out.println("delete was success");
@@ -93,6 +107,19 @@ public abstract class GeneratorOfOperations<T extends IRecord> {
     }
 
     public boolean checkIfTheyAreSame(ArrayList<IRecord> arrayToCompare) {
+
+        System.out.println("Vsetky data ktore som inzertovala: ");
+        for (int i = 0; i < this.insertedRecords.size(); i++) {
+            System.out.println(this.insertedRecords.get(i));
+        }
+
+        System.out.println("return all data form trie");
+        for (int i = 0; i < arrayToCompare.size(); i++) {
+            System.out.println(arrayToCompare.get(i));
+        }
+
+
+
 
         if (this.insertedRecords.containsAll(arrayToCompare) && this.insertedRecords.size() == arrayToCompare.size()) {
             System.out.println("They are same!!");

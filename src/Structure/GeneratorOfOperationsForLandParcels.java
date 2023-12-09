@@ -7,6 +7,8 @@ import Data.Others.CadastralObjectGenerator;
 import Structure.DynamicHashing.DynamicHashing;
 import Structure.DynamicHashing.IRecord;
 
+import java.util.ArrayList;
+
 public class GeneratorOfOperationsForLandParcels extends GeneratorOfOperations<LandParcel> {
 
     private CadastralObjectGenerator generaterParciel;
@@ -27,6 +29,22 @@ public class GeneratorOfOperationsForLandParcels extends GeneratorOfOperations<L
             IRecord record = this.generaterParciel.generateLandParcel(size,range);
             if(this.dynamicHashing.insert(record)) {
                 //System.out.println("land parcel " + i + " inserted");
+               // this.dynamicHashing.returnSequenceStringOutputWithOverfillingFilesAndBlocks();
+
+//                System.out.print("zoznam zretazencyh: ");
+//                ArrayList<Integer> linked = this.dynamicHashing.returnListOfEmptyBlocksMainFile();
+//                for (int j = 0; j < linked.size(); j++) {
+//                    System.out.print(linked.get(j) + " ");
+//                }
+//                System.out.println();
+//
+//                System.out.print("zoznam zretazencyh: ");
+//                ArrayList<Integer> linkedpr = this.dynamicHashing.returnListOfEmptyBlocksOverfillingFile();
+//                for (int j = 0; j < linkedpr.size(); j++) {
+//                    System.out.print(linkedpr.get(j) + " ");
+//                }
+//                System.out.println();
+
                 this.insertedRecords.add(record);
             }
 

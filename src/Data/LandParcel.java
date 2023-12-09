@@ -156,10 +156,10 @@ public class LandParcel extends CadastralObject {
       //  System.out.println(bitSet);
        // System.out.println(bitSet.length());
        // System.out.println("----------");
-        BitSet n = getSubBitSet(bitSet,0,4);
+        BitSet n = getSubBitSet(bitSet,0,8);
 
-        if (n.length() < 4) {
-            n.set(n.length(),4,true);
+        if (n.length() < 8) {
+            n.set(n.length(),8,true);
         }
 
         //System.out.println(n);
