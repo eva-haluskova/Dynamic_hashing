@@ -169,7 +169,7 @@ public class Block<T extends IRecord> {
     }
 
     /**
-     * work with data - insert, find, delete
+     * work with data - insert, find, delete, edit
      */
     public boolean insertRecord(IRecord parRecord) {
         if (this.countOfValidRecords < this.blockFactor) {
@@ -179,6 +179,18 @@ public class Block<T extends IRecord> {
         } else {
             return false;
         }
+    }
+
+    public boolean editRecord(IRecord parRecord) {
+        int index = -1;
+        for (int i = 0; i < this.countOfValidRecords; i++) {
+            if (this.listOfRecords[i].equals(parRecord)) {
+                this.listOfRecords[i] = (T) parRecord;
+                return true;
+            }
+        }
+        return false;
+        //return true;
     }
 
     public IRecord findRecord(IRecord record) {

@@ -13,12 +13,12 @@ public class CadastralObjectGenerator {
     private Random random;
     private int realEstateId;
     private int landParcelId;
-    Date currentDate;
 
-    public CadastralObjectGenerator(int seed) {
+    public CadastralObjectGenerator() {
         this.random = new Random();
-        this.random.setSeed(seed);
-        this.currentDate = new Date(); // Current date
+        this.realEstateId = 0;
+        this.landParcelId = 0;
+        this.random.setSeed(1);
     }
 
     public ArrayList<CadastralObject> generateObjects(
@@ -43,43 +43,82 @@ public class CadastralObjectGenerator {
         return listToReturn;
     }
 
-// todo prerobit toto poriadne
     public LandParcel generateLandParcel(
             double parSizeOfObject, GPS[] parRangeOfGPS
     ) {
-        //int pocetLeziacichParciel = Math.min(random.nextInt(this.landParcelId + 1),5);
-        int pocetLeziacichParciel = random.nextInt(5);
+        LandParcel landParcel = new LandParcel(this.getNextLandParcelId(), this.returnGPSOfObject(parSizeOfObject,parRangeOfGPS),"LP_" + this.landParcelId);
+        return landParcel;
+    }
 
-        // Convert Date to int (representing seconds)
-        int seconds = (int) (currentDate.getTime() / 1000); // Divide by 1000 to get seconds
+    public RealEstate generateRealEstate(
+            double parSizeOfObject, GPS[] parRangeOfGPS
+    ) {
+        RealEstate realEstate = new RealEstate(this.getNextRealEstateId(), this.returnGPSOfObject(parSizeOfObject,parRangeOfGPS),"RL_" + this.landParcelId, this.random.nextInt());
+        return realEstate;
+    }
 
-        int o = Math.abs(this.random.nextInt());
-        LandParcel sa = new LandParcel(o, this.returnGPSOfObject(parSizeOfObject,parRangeOfGPS),"LP_" + this.landParcelId);
-        // TODO ja viem ze je to zatial zle, toto je zatila ozaj len na otestovanie tvorby
-        for (int i = 0; i < pocetLeziacichParciel; i++) {
-            sa.addBelongingRealEstate(Math.abs(random.nextInt()));
+    public int generateInt() {
+        int numb = Math.abs(random.nextInt());
+        if (numb > 10000) {
+            numb = numb/10000;
         }
-        this.landParcelId++;
-        return sa;
+        return numb;
     }
 
 
-    private GPS[] returnGPSOfObject(double parSizeOfObject, GPS[] parRangeOfGPS) {
+    public GPS[] returnGPSOfObject(double parSizeOfObject, GPS[] parRangeOfGPS) {
         MapCoordinates mp = new MapCoordinates(parRangeOfGPS);
         Coordinates coors = mp.getCoordinatesOfRoot();
 
         double sizeOfXAxes = coors.getUpperX() - coors.getLowerX();
         double sizeOfYAxes = coors.getUpperY() - coors.getLowerY();
 
-        double x1 = random.nextDouble() * (sizeOfXAxes - parSizeOfObject - 1);
+        double x1 = random.nextDouble() * (sizeOfXAxes - parSizeOfObject -1);
         double x2 = x1 + parSizeOfObject;
         double y1 = random.nextDouble() * (sizeOfYAxes - parSizeOfObject - 1);
         double y2 = y1 + parSizeOfObject;
+
+        x1 = Math.round(x1 * 100.0) / 100.0;
+        x2 = Math.round(x2 * 100.0) / 100.0;
+        y1 = Math.round(y1 * 100.0) / 100.0;
+        y2 = Math.round(y2 * 100.0) / 100.0;
+//        x1 = Math.round(x1);
+//        x2 = Math.round(x2);
+//        y1 = Math.round(y1);
+//        y2 = Math.round(y2);
 
         Coordinates coor = new Coordinates(x1,x2,y1,y2);
 
         GPS[] gps = mp.getGPSValue(coor);
 
         return gps;
+    }
+
+    public int getNextLandParcelId() {
+        int ret = this.landParcelId;
+        this.landParcelId++;
+        return ret;
+    }
+
+    public int getNextRealEstateId() {
+        int ret = this.realEstateId;
+        this.realEstateId++;
+        return ret;
+    }
+
+    public int getRealEstateId() {
+        return this.realEstateId;
+    }
+
+    public int getLandParcelId() {
+        return this.landParcelId;
+    }
+
+    public void returnBackNextLandParcelId() {
+        this.landParcelId--;
+    }
+
+    public void returnBackNextRealEstateId() {
+        this.realEstateId--;
     }
 }

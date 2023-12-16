@@ -1,5 +1,8 @@
 package Structure.DynamicHashing.Nodes;
 
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
+
 /**
  * Represents external node which contain attributes for working with data.
  */
@@ -60,5 +63,20 @@ public class ExternalNode extends Node {
 
     public void decreaseCountOfLinkedBlocks() {
         this.countOfLinkedBlocks++;
+    }
+
+    public void toByteArray() {
+
+    }
+
+    public void fromByteArray(byte[] parByteNode) {
+        ByteArrayOutputStream hlpByteArrayOutputStream = new ByteArrayOutputStream();
+        DataOutputStream hlpOutStream = new DataOutputStream(hlpByteArrayOutputStream);
+
+//        try {
+//            hlpOutStream.write();
+//        } catch () {
+//
+//        }
     }
 }

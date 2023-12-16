@@ -255,4 +255,16 @@ public class GPS {
         return size;
     }
 
+    public boolean equals(Object parOtherObject) {
+        if (parOtherObject == null || getClass() != parOtherObject.getClass() ) {
+            return false;
+        }
+        GPS other = (GPS) parOtherObject;
+
+        return this.longitude.equals((other).longitude) &&
+                this.latitude.equals((other).latitude) &&
+                Math.abs(this.latitudePosition - (other).latitudePosition) < EPSILON &&
+                Math.abs(this.longitudePosition - (other).longitudePosition) < EPSILON;
+    }
+
 }

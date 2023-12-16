@@ -28,9 +28,7 @@ public class RealEstate extends CadastralObject {
         this.serialNumber = parSerialNumber;
 
         this.belongingLandParcels = new int[MAX_COUNT_OF_PARCELS];
-        for (int i = 0; i < MAX_COUNT_OF_PARCELS; i++) {
-            this.belongingLandParcels[i] = -1;
-        }
+        this.inicializeLanParcels();
     }
 
     /**
@@ -47,6 +45,14 @@ public class RealEstate extends CadastralObject {
     public RealEstate() {
         super();
         this.belongingLandParcels = new int[MAX_COUNT_OF_PARCELS];
+        this.serialNumber = -1;
+    }
+
+    public RealEstate(int parIdentityNumber) {
+        super();
+        this.belongingLandParcels = new int[MAX_COUNT_OF_PARCELS];
+        this.serialNumber = -1;
+        this.identityNumber = parIdentityNumber;
     }
 
     /**
@@ -107,7 +113,7 @@ public class RealEstate extends CadastralObject {
         }
         return "Real Estate: " +
                 "serial numb: " + this.serialNumber + " " +
-                super.toString() + " " + idesOfRealEstates;
+                super.toString() + ", " + idesOfRealEstates;
     }
 
     @Override
@@ -150,7 +156,44 @@ public class RealEstate extends CadastralObject {
     @Override
     public BitSet getHash() {
         int hashCode = Objects.hash(this.identityNumber);
-        return BitSet.valueOf(new long[] {hashCode});
+        //return BitSet.valueOf(new long[] {hashCode});
+        BitSet bitSet = new BitSet(32); // Change the number to fit your required length
+
+        // Set bits in the BitSet based on the hash code
+        for (int i = 0; i < 32; i++) { // Assuming integer hash code is 32 bits
+            boolean isBitSet = ((hashCode >> i) & 1) == 1;
+            bitSet.set(i, isBitSet);
+        }
+
+
+        if (bitSet.length() < 32) {
+            bitSet.set(bitSet.length(),32,true);
+        }
+        //  System.out.println(bitSet);
+        // System.out.println(bitSet.length());
+        // System.out.println("----------");
+        BitSet n = getSubBitSet(bitSet,0,2);
+
+        if (n.length() < 2) {
+            n.set(n.length(),2,true);
+        }
+
+        //System.out.println(n);
+        //System.out.println(n.length());
+        return n;
+
+    }
+
+    public static BitSet getSubBitSet(BitSet originalBitSet, int fromIndex, int toIndex) {
+        BitSet subBitSet = new BitSet(toIndex - fromIndex);
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            if (originalBitSet.get(i)) {
+                subBitSet.set(i - fromIndex);
+            }
+        }
+
+        return subBitSet;
     }
 
     /**
@@ -165,9 +208,23 @@ public class RealEstate extends CadastralObject {
     }
 
     public int[] getBelongingLandParcels() {
-        return this.belongingLandParcels;
+        int index = -1;
+        for (int i = 0; i < MAX_COUNT_OF_PARCELS; i++) {
+            if (this.belongingLandParcels[i] == -1) {
+                index = i;
+                break;
+            }
+        }
+        if (index == -1) {
+            return this.belongingLandParcels;
+        } else {
+            int[] ret = new int[index];
+            for (int i = 0; i < index; i++) {
+                ret[i] = this.belongingLandParcels[i];
+            }
+            return ret;
+        }
     }
-
     public void addBelongingLandParcel(int parIdentityNumber) {
         for (int i = 0; i < MAX_COUNT_OF_PARCELS; i++) {
             if (this.belongingLandParcels[i] == -1) {
@@ -177,4 +234,25 @@ public class RealEstate extends CadastralObject {
         }
     }
 
+    public void deleteBelongingLandParcel(int parIdentityNumber) {
+        int indexOfDelete = 0;
+        for (int i = 0; i < MAX_COUNT_OF_PARCELS; i++) {
+            if (this.belongingLandParcels[i] == parIdentityNumber) {
+                indexOfDelete = i;
+            }
+        }
+        for (int i = indexOfDelete; i < MAX_COUNT_OF_PARCELS-1; i++) {
+            this.belongingLandParcels[i] = this.belongingLandParcels[i+1];
+        }
+    }
+
+    public void resetBelongingLandParcels() {
+        this.inicializeLanParcels();
+    }
+
+    private void inicializeLanParcels() {
+        for (int i = 0; i < MAX_COUNT_OF_PARCELS; i++) {
+            this.belongingLandParcels[i] = -1;
+        }
+    }
 }

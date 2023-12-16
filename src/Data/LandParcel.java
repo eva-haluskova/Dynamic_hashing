@@ -23,9 +23,7 @@ public class LandParcel extends CadastralObject {
         super(parIdentityNumber, parGpsCoordinates, parDescription);
 
         this.belongingRealEstates = new int[MAX_COUNT_OF_ESTATES];
-        for (int i = 0; i < MAX_COUNT_OF_ESTATES; i++) {
-            this.belongingRealEstates[i] = -1;
-        }
+        this.inicializeBelongingRealEstate();
     }
 
     /**
@@ -41,6 +39,12 @@ public class LandParcel extends CadastralObject {
 
     public LandParcel() {
         super();
+        this.belongingRealEstates = new int[MAX_COUNT_OF_ESTATES];
+    }
+
+    public LandParcel(int parIdentityNumber) {
+        super();
+        this.identityNumber = parIdentityNumber;
         this.belongingRealEstates = new int[MAX_COUNT_OF_ESTATES];
     }
 
@@ -96,7 +100,7 @@ public class LandParcel extends CadastralObject {
             idesOfRealEstates.append(akt);
             idesOfRealEstates.append(" ");
         }
-        return "Land Parcel: " + super.toString() + " " + idesOfRealEstates;
+        return "Land Parcel: " + super.toString() + ", " + idesOfRealEstates;
     }
 
     @Override
@@ -156,10 +160,10 @@ public class LandParcel extends CadastralObject {
       //  System.out.println(bitSet);
        // System.out.println(bitSet.length());
        // System.out.println("----------");
-        BitSet n = getSubBitSet(bitSet,0,8);
+        BitSet n = getSubBitSet(bitSet,0,2);
 
-        if (n.length() < 8) {
-            n.set(n.length(),8,true);
+        if (n.length() < 2) {
+            n.set(n.length(),2,true);
         }
 
         //System.out.println(n);
@@ -184,7 +188,22 @@ public class LandParcel extends CadastralObject {
      * Getters and setters of attributes
      */
     public int[] getBelongingRealEstates() {
-        return this.belongingRealEstates;
+        int index = -1;
+        for (int i = 0; i < MAX_COUNT_OF_ESTATES; i++) {
+            if (this.belongingRealEstates[i] == -1) {
+                index = i;
+                break;
+            }
+        }
+        if (index == -1) {
+            return this.belongingRealEstates;
+        } else {
+            int[] ret = new int[index];
+            for (int i = 0; i < index; i++) {
+                ret[i] = this.belongingRealEstates[i];
+            }
+            return ret;
+        }
     }
 
     public void addBelongingRealEstate(int parIdentityNumber) {
@@ -193,6 +212,28 @@ public class LandParcel extends CadastralObject {
                 this.belongingRealEstates[i] = parIdentityNumber;
                 break;
             }
+        }
+    }
+
+    public void deleteBelongingRealEstate(int parIdentityNumber) {
+        int indexOfDelete = 0;
+        for (int i = 0; i < MAX_COUNT_OF_ESTATES; i++) {
+            if (this.belongingRealEstates[i] == parIdentityNumber) {
+                indexOfDelete = i;
+            }
+        }
+        for (int i = indexOfDelete; i < MAX_COUNT_OF_ESTATES-1; i++) {
+            this.belongingRealEstates[i] = this.belongingRealEstates[i+1];
+        }
+    }
+
+    public void resetBelongingRealEstate() {
+        this.inicializeBelongingRealEstate();
+    }
+
+    private void inicializeBelongingRealEstate() {
+        for (int i = 0; i < MAX_COUNT_OF_ESTATES; i++) {
+            this.belongingRealEstates[i] = -1;
         }
     }
 

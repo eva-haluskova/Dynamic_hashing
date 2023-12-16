@@ -46,6 +46,13 @@ public abstract class CadastralObject implements IRecord {
     public CadastralObject() {
         GPS[] gps = {new GPS(),new GPS()};
         this.gpsCoordinates = gps;
+        this.description = "";
+    }
+
+    public CadastralObject(int parIdentityNumber) {
+        this.identityNumber = parIdentityNumber;
+        this.gpsCoordinates = new GPS[2];
+        this.description = "";
     }
 
     /**
