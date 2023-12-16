@@ -15,7 +15,7 @@ public class GeneratorOfOperationsForLandParcels extends GeneratorOfOperations<L
 
     public GeneratorOfOperationsForLandParcels(DynamicHashing<LandParcel> parDynamicHashing) {
         super(parDynamicHashing);
-        this.generaterParciel = new CadastralObjectGenerator(2);
+        this.generaterParciel = new CadastralObjectGenerator();
     }
 
     @Override

@@ -309,23 +309,26 @@ public class QuadTree<T> {
         if (!Coordinates.isIncludingWholeData(this.rangeOfTree,parCoordinates)) {
             return null;
         }
-        Stack<QuadTreeNode<T>> nodesToProcess = new Stack<>();
-        nodesToProcess.push(this.root);
+
         ArrayList<Data<T>> listToReturn = new ArrayList<>();
+        if (this.root != null) {
+            Stack<QuadTreeNode<T>> nodesToProcess = new Stack<>();
+            nodesToProcess.push(this.root);
 
-        while (!nodesToProcess.isEmpty()) {
-            QuadTreeNode<T> current = nodesToProcess.pop();
-            for (int i = 0; i < current.getListOfData().size(); i++) {
-                if (Coordinates.belongsToArea(current.getListOfData().get(i).getCoordinates(), parCoordinates) ||
-                        Coordinates.isIncludingWholeData(current.getListOfData().get(i).getCoordinates(), parCoordinates)) {
-                    listToReturn.add(current.getListOfData().get(i));
+            while (!nodesToProcess.isEmpty()) {
+                QuadTreeNode<T> current = nodesToProcess.pop();
+                for (int i = 0; i < current.getListOfData().size(); i++) {
+                    if (Coordinates.belongsToArea(current.getListOfData().get(i).getCoordinates(), parCoordinates) ||
+                            Coordinates.isIncludingWholeData(current.getListOfData().get(i).getCoordinates(), parCoordinates)) {
+                        listToReturn.add(current.getListOfData().get(i));
+                    }
+
                 }
-
-            }
-            if (!current.isLeaf()) {
-                for (QuadTreeNode<T> child: current.getChildren()) {
-                    if (child != null) {
-                        nodesToProcess.push(child);
+                if (!current.isLeaf()) {
+                    for (QuadTreeNode<T> child : current.getChildren()) {
+                        if (child != null) {
+                            nodesToProcess.push(child);
+                        }
                     }
                 }
             }
@@ -345,22 +348,25 @@ public class QuadTree<T> {
         ArrayList<Data<T>> listToReturn = new ArrayList<>();
         Stack<QuadTreeNode> nodesToProcess = new Stack<>();
 
-        nodesToProcess.push(this.root);
+        if (this.root != null) {
 
-        while (!nodesToProcess.isEmpty()) {
+            nodesToProcess.push(this.root);
 
-            QuadTreeNode<T> current = nodesToProcess.pop();
+            while (!nodesToProcess.isEmpty()) {
 
-            if (Coordinates.isIncludingWholeData(parCoordinates,current.getCoordinates())) {
-                listToReturn.addAll(this.getAllDataInSubTree(current));
-            } else {
-                if (!current.isLeaf()) {
-                    ArrayList<Integer> indicesOfSons = current.getIncludingQuadrants(parCoordinates);
-                    for (int index : indicesOfSons) {
-                        nodesToProcess.push(current.accessToNthSon(index));
+                QuadTreeNode<T> current = nodesToProcess.pop();
+
+                if (Coordinates.isIncludingWholeData(parCoordinates, current.getCoordinates())) {
+                    listToReturn.addAll(this.getAllDataInSubTree(current));
+                } else {
+                    if (!current.isLeaf()) {
+                        ArrayList<Integer> indicesOfSons = current.getIncludingQuadrants(parCoordinates);
+                        for (int index : indicesOfSons) {
+                            nodesToProcess.push(current.accessToNthSon(index));
+                        }
                     }
+                    listToReturn.addAll(current.getAllAppropriateData(parCoordinates));
                 }
-                listToReturn.addAll(current.getAllAppropriateData(parCoordinates));
             }
         }
         return listToReturn;
