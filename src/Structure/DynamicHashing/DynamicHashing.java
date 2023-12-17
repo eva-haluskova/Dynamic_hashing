@@ -1067,7 +1067,7 @@ public class DynamicHashing<T extends IRecord> {
         this.finishWorkWithTrie();
 
         // pre order
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(parPathFile))) {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(parPathFile + "DH.txt"))) {
             writer.write(Integer.toString(this.mainFileBlockFactor));
             writer.write(";");
             writer.write(Integer.toString(this.overfillingFileBlockFactor));
@@ -1077,16 +1077,23 @@ public class DynamicHashing<T extends IRecord> {
             writer.write(Integer.toString(this.firstEmptyBlockOverfillingFile));
             writer.write("\n");
 
-//            File tempfile = new File(this.rawMainName);
-//            File datafile = new File(parPathFile + this.rawMainName);
-//            tempfile.renameTo(datafile);
+            File tempfileMain = new File(this.rawMainName);
+            File datafileMain = new File(parPathFile + this.rawMainName);
+            tempfileMain.renameTo(datafileMain);
+            writer.write(parPathFile + this.rawMainName);
 
+            //writer.write(this.rawMainName);
 
-           // writer.write(parPathFile + this.rawMainName);
-            writer.write(this.rawMainName);
             System.out.println("Ukladam hlavny subor s nazvom: " + this.rawMainName);
             writer.write(";");
-            writer.write(this.rawOverfillingName);
+
+            File tempfileOverifilling = new File(this.rawOverfillingName);
+            File datafileOverfilling = new File(parPathFile + this.rawOverfillingName);
+            tempfileOverifilling.renameTo(datafileOverfilling);
+            writer.write(parPathFile + this.rawOverfillingName);
+
+            //writer.write(this.rawOverfillingName);
+
             System.out.println("Ukladam preplnovak s nazvom: " + this.rawOverfillingName);
             writer.write("\n");
 
@@ -1140,7 +1147,7 @@ public class DynamicHashing<T extends IRecord> {
 
     public void loadTrie(String parPathFile) {
         String line;
-        try (BufferedReader reader = new BufferedReader(new FileReader(parPathFile))) {
+        try (BufferedReader reader = new BufferedReader(new FileReader(parPathFile + "DH.txt"))) {
             line = reader.readLine();
             String[] blockFactors = line.split(";");
             this.mainFileBlockFactor = Integer.parseInt(blockFactors[0]);
@@ -1152,9 +1159,7 @@ public class DynamicHashing<T extends IRecord> {
             line = reader.readLine();
             String[] namesOfFiles = line.split(";");
             this.rawMainName = namesOfFiles[0];
-            System.out.println("Nazov hlavenho suboru: " + this.rawMainName);
             this.rawOverfillingName = namesOfFiles[1];
-            System.out.println("Nazov preplnovaku: " + this.rawOverfillingName);
             this.reinicializeFiles(this.rawMainName,this.rawOverfillingName);
 
             this.root = new InternalNode(null);

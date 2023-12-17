@@ -476,13 +476,13 @@ public class Model {
 
 
     private void saveDynamicHashing(String parName) {
-        this.realEstateDynamicHashing.saveTrie(parName + "DHE.txt");
-        this.landParcelDynamicHashing.saveTrie(parName + "DHP.txt");
+        this.realEstateDynamicHashing.saveTrie(parName + "E");
+        this.landParcelDynamicHashing.saveTrie(parName + "P");
     }
 
     private void loadDynamicHashing(String parName) {
-        this.landParcelDynamicHashing = new DynamicHashing<>(parName + "DHP.txt", LandParcel.class);
-        this.realEstateDynamicHashing = new DynamicHashing<>(parName + "DHE.txt", RealEstate.class);
+        this.landParcelDynamicHashing = new DynamicHashing<>(parName + "P", LandParcel.class);
+        this.realEstateDynamicHashing = new DynamicHashing<>(parName + "E", RealEstate.class);
 
     }
 
