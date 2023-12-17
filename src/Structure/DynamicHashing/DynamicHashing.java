@@ -1063,10 +1063,13 @@ public class DynamicHashing<T extends IRecord> {
         }
     }
 
+
+    /**
+     * Load and save trie
+     */
     public void saveTrie(String parPathFile) {
         this.finishWorkWithTrie();
 
-        // pre order
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(parPathFile + "DH.txt"))) {
             writer.write(Integer.toString(this.mainFileBlockFactor));
             writer.write(";");
@@ -1080,23 +1083,15 @@ public class DynamicHashing<T extends IRecord> {
             File tempfileMain = new File(this.rawMainName);
             File datafileMain = new File(parPathFile + "MainFile.bin");
             tempfileMain.renameTo(datafileMain);
-           // writer.write(parPathFile + this.rawMainName);
             writer.write(parPathFile + "MainFile.bin");
-//
-//
-//            System.out.println("Ukladam hlavny subor s nazvom: " + this.rawMainName);
             writer.write(";");
 
             File tempfileOverifilling = new File(this.rawOverfillingName);
             File datafileOverfilling = new File(parPathFile + "OverfillingFile.bin");
             tempfileOverifilling.renameTo(datafileOverfilling);
-//            writer.write(parPathFile + this.rawOverfillingName);
             writer.write(parPathFile + "OverfillingFile.bin");
 
-            //writer.write(this.rawOverfillingName);
-
             writer.write("\n");
-
 
             if (root == null) {
                 writer.close();
@@ -1113,14 +1108,14 @@ public class DynamicHashing<T extends IRecord> {
                 Node current = stack.pop();
                 String path = paths.pop();
 
-                // If it's an internal node, push its children and update the path
+                // If its an internal node
                 if (current instanceof InternalNode) {
                     stack.push(((InternalNode) current).getRightSon());
                     paths.push(path + "1");
 
                     stack.push(((InternalNode) current).getLeftSon());
                     paths.push(path + "0");
-                } else { // It's an external node
+                } else { // Its an external node
 
                     writer.write(path);
                     writer.write(";");
@@ -1165,8 +1160,6 @@ public class DynamicHashing<T extends IRecord> {
 
                 Node current = this.root;
 
-
-                // Traverse the tree according to the path
                 int index = 1;
 
                 for (char c : path.toCharArray()) {
@@ -1199,13 +1192,11 @@ public class DynamicHashing<T extends IRecord> {
                 ((ExternalNode)current).setCountOfLinkedBlocks(Integer.parseInt(info[3]));
 
             }
-            System.out.println("Successfully loaded dynamicHashing");
+            System.out.println("Successfully loaded dynamic Hashing");
         } catch (IOException e) {
             e.printStackTrace();
 
         }
     }
-
-
 
 }

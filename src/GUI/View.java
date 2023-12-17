@@ -164,28 +164,6 @@ public class View extends JFrame {
 
     }
 
-    public class CadastralObjectRender extends JLabel implements ListCellRenderer<String> {
-        public CadastralObjectRender() {
-            setOpaque(true);
-        }
-        @Override
-        public Component getListCellRendererComponent(JList<? extends String> list, String data, int index, boolean isSelected, boolean cellHasFocus) {
-            setText(data);
-
-            if (isSelected) {
-                setBackground(list.getSelectionBackground());
-                setForeground(list.getSelectionForeground());
-            } else {
-                setBackground(list.getBackground());
-                setForeground(list.getForeground());
-            }
-
-            return this;
-        }
-
-    }
-
-
     public class MultilineStringRenderer extends JLabel implements ListCellRenderer<String> {
 
         @Override
@@ -207,10 +185,7 @@ public class View extends JFrame {
         }
     }
 
-
-
-
-    /**
+    /*
      * Listeners for different actions
      */
 
@@ -245,10 +220,6 @@ public class View extends JFrame {
         GenerateDataButton.addActionListener(generateButtonListener);
     }
 
-    void addCheckboxListener(ActionListener checkboxListener) {
-        AutoOptimalization.addActionListener(checkboxListener);
-    }
-
     /**
      * Main Panel Buttons
      */
@@ -269,14 +240,6 @@ public class View extends JFrame {
      */
     void addCreateTreeButtonListener(ActionListener createTreeButtonListener) {
         CreateTreeButton.addActionListener(createTreeButtonListener);
-    }
-
-    void addLoadDataButtonListener(ActionListener loadTreeButtonListener) {
-        LoadDataButton.addActionListener(loadTreeButtonListener);
-    }
-
-    void addSaveDataButtonListener(ActionListener saveTreeButtonListener) {
-        SaveDataButton.addActionListener(saveTreeButtonListener);
     }
 
     /**
@@ -309,14 +272,6 @@ public class View extends JFrame {
         return OtherPanel;
     }
 
-    public JPanel getMenuPanel() {
-        return MenuPanel;
-    }
-
-    public JPanel getInputPanel() {
-        return InputPanel;
-    }
-
     public JPanel getCoordinatesOnePanel() {
         return CoordinatesOnePanel;
     }
@@ -335,10 +290,6 @@ public class View extends JFrame {
 
     public JPanel getTypeOfObjectPanel() {
         return TypeOfObjectPanel;
-    }
-
-    public JPanel getCoorsPanel() {
-        return CoorsPanel;
     }
 
     public JPanel getLowerPanel() {
@@ -364,11 +315,7 @@ public class View extends JFrame {
         return ConfirmButtonDown;
     }
 
-    public void setConfirmButtonText(String text) {
-        ConfirmButton.setText(text);
-    }
-
-    /**
+    /*
      * Getters and setters of needed Text fields
      */
 
@@ -485,21 +432,7 @@ public class View extends JFrame {
         return Integer.parseInt(MaxDepthNumber.getText());
     }
 
-    /**
-     * loading and saving tree
-     */
-
-    public String getTextLoadData() {
-        System.out.println(TextLoadData.getText());
-        return TextLoadData.getText();
-    }
-
-    public String getTextSaveData() {
-        System.out.println(TextSaveData.getText());
-        return TextSaveData.getText();
-    }
-
-    /**
+    /*
      *
      * Getters  and setters of Comboboxes
      */
@@ -573,13 +506,6 @@ public class View extends JFrame {
         return TypeOfTreeOption.getSelectedItem().toString();
     }
 
-    public String getTypeOfFindedObjectValue() {
-        return TypeOfFindedObjectValue.getSelectedItem().toString();
-    }
-    public boolean getAutoOptimalization() {
-        return AutoOptimalization.isSelected();
-    }
-
     /**
      *  Setters of some needed JLables
      */
@@ -631,43 +557,10 @@ public class View extends JFrame {
         SaveAllFiles.addActionListener(saveAllDataListener);
     }
 
-    /**
-     * Work with output list
-     */
-    public void addItemToOutput(Data<? extends CadastralObject> param) {
-        this.outputModel.addElement(param);
-    }
-
-    public void addMultipleItemsToOutput(ArrayList<Data<? extends CadastralObject>> param) {
-        this.outputModel.addAll(param);
-    }
-
-    public void removeData(Data<? extends CadastralObject> o) {
-        this.outputModel.removeElement(o);
-    }
-
-    public void removeAllData() {
-        this.outputModel.removeAllElements();
-    }
-
-    public JList getListOfOutput() {
-        return ListOfOutput;
-    }
-
     public void updateList(String param) {
         this.outputModel.removeAllElements();
         this.outputModel.add(0,param);
     }
-
-    public void updatePointerList(ArrayList<? extends CadastralObject> param) {
-        this.pointerModel.removeAllElements();
-        this.pointerModel.addAll(param);
-    }
-
-    public JList<String> getOutputListOfObj() {
-        return this.outputList;
-    }
-
     public JScrollPane getScrollPanePointer() {
         return ScrollPaneOfPointers;
     }

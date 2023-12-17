@@ -3,28 +3,20 @@ package GUI;
 
         import Data.CadastralObject;
         import Data.GPS;
-        import Data.Others.CadastralObjectGenerator;
-        import Structure.DynamicHashing.IRecord;
-        import Structure.QuadTree.Data;
         import Data.LandParcel;
         import Data.RealEstate;
 
         import javax.swing.*;
-        import javax.swing.event.ListSelectionEvent;
-        import javax.swing.event.ListSelectionListener;
         import java.awt.*;
         import java.awt.event.ActionEvent;
         import java.awt.event.ActionListener;
         import java.awt.event.ItemEvent;
         import java.awt.event.ItemListener;
-        import java.util.ArrayList;
 
 public class Controller {
 
     private Model model;
     private View view;
-
-    private Data<? extends CadastralObject> isDataToEdit;
 
     public Controller(Model parCadaster, View parView) {
         this.model = parCadaster;
@@ -37,18 +29,14 @@ public class Controller {
         this.view.addTreeButtonListener(new TreeButtonListener());
         this.view.addOtherButtonListener(new OtherButtonListener());
         this.view.addMainComboBoxListener(new MainComboBoxListener());
-       // this.view.addOutputListSelectionListener(new OutputListSelectionListener());
         this.view.addCreateTreeButtonListener(new CreateTreeButtonListener());
         this.view.addConfirmButtonListener(new ConfirmButtonListener());
         this.view.addConfirmButtonDownListener(new ConfirmButtonDownListener());
         this.view.addGenerateDataButtonListener(new GenerateButtonListener());
-        this.view.addLoadDataButtonListener(new LoadDataListener());
-        this.view.addSaveDataButtonListener(new SaveDataListener());
         this.view.addCreateDHTreeButtonListener(new CreateDHListener());
         this.view.addSaveAllFilesButtonListener(new SaveAllDataListener());
         this.view.addLoadAllFilesButtonListener(new LoadAllDataListener());
         view.getLoadDataPanel().setVisible(false);
-//        this.view.addCheckboxListener(new CheckBoxListener());
     }
 
     /**
@@ -151,8 +139,6 @@ public class Controller {
             view.getIOPanel().setBorder(BorderFactory.createTitledBorder("Find data"));
             view.getConfirmButton().setText("Find object");
             view.getConfirmButton().setVisible(true);
-            //view.getScrollPanePointer().setVisible(true);
-            // view.getTypeOfFindedObjectPanel().setVisible(true);
             view.getNumberOfObjects().setVisible(false);
             view.getSizeOfGenerateObjects().setVisible(false);
             view.getCoordinatesOnePanel().setBorder(BorderFactory.createTitledBorder("Coordinates number one:"));
@@ -174,18 +160,6 @@ public class Controller {
             view.getLoadDataPanel().setVisible(false);
             view.getIOPanel().setBorder(BorderFactory.createTitledBorder("Create quad tree"));
             view.getOtherPanel().setVisible(false);
-        }
-    }
-
-    class LoadDataListener implements ActionListener{
-        public void actionPerformed(ActionEvent e) {
-            loadData();
-        }
-    }
-
-    class SaveDataListener implements ActionListener{
-        public void actionPerformed(ActionEvent e) {
-            saveData();
         }
     }
     class OtherButtonListener implements ActionListener {
@@ -222,9 +196,6 @@ public class Controller {
             view.getIDNumberFiled().setVisible(false);
             view.getOtherPanel().setVisible(false);
             view.getLowerPanel().setPreferredSize(new Dimension(800,150));
-//            for (Component cp : view.getCoordinatesTwoPanel().getComponents() ) {
-//////                    cp.setEnabled(false);
-//////                }
         }
     }
 
@@ -308,36 +279,6 @@ public class Controller {
         }
     }
 
-//    /**
-//     * Output panel listener
-//     */
-//    class OutputListSelectionListener implements ListSelectionListener {
-//        @Override
-//        public void valueChanged(ListSelectionEvent e) {
-//
-//            if (!e.getValueIsAdjusting()) {
-//                Object selectedValue = view.getListOfOutput().getSelectedValue();
-//                if (view.getConfirmButton().getText().equals("Get objects to edit")) {
-//                    if ((Data<? extends CadastralObject>) selectedValue != null) {
-//                        changeEditView(true);
-//                        setEditValues((Data<? extends CadastralObject>) selectedValue);
-//                        isDataToEdit = (Data<? extends CadastralObject>) selectedValue;
-//                    }
-//                } else if (view.getConfirmButton().getText().equals("Get objects to delete")) {
-//                    if ((Data<? extends CadastralObject>) selectedValue != null) {
-//                        deleteData((Data<? extends CadastralObject>) selectedValue);
-//                        view.removeData((Data<? extends CadastralObject>) selectedValue);
-//                    }
-//                } else if (view.getConfirmButton().getText().equals("Find")) {
-//                    if ((Data<? extends CadastralObject>) selectedValue != null) {
-//                        view.updatePointerList(showData((Data<? extends CadastralObject>) selectedValue));
-//                    }
-//                }
-//            }
-//        }
-//    }
-//
-
     /*
       ---- WORK WITH MODEL ----
      */
@@ -420,66 +361,7 @@ public class Controller {
         this.model.load(view.getNameForLoadDataValue());
     }
 
-
-//    public ArrayList<Data<? extends CadastralObject>> returnAllData() {
-//        return this.model.returnAllData();
-//    }
-
-//    public ArrayList<LandParcel> returnBelongingParcels(Data<RealEstate> parData) {
-//        return this.model.returnAllIncludingParcels(parData);
-//    }
-//
-//    public ArrayList<RealEstate> returnBelongingEstates(Data<LandParcel> parData) {
-//        return this.model.returnAllIncludingEstates(parData);
-//    }
-
-
-    public ArrayList<Data<? extends CadastralObject>> generateLandParcels() {
-        return null;
-        //TODO
-        //return this.model.generateLandParcels(view.getNumberOfGeneratedObjects(),view.getSizeOfGeneratedObjectsNumber(),returnGPSFromView());
-    }
-
-    public ArrayList<Data<? extends CadastralObject>> generateRealEstates() {
-        return null;
-        //TODO
-       // return this.model.generateRealEstates(view.getNumberOfGeneratedObjects(),view.getSizeOfGeneratedObjectsNumber(),returnGPSFromView());
-    }
-
-    public ArrayList<Data<? extends CadastralObject>> generateData() {
-        return null;
-        //TODO
-        //return this.model.generateData(view.getNumberOfGeneratedObjects(),view.getSizeOfGeneratedObjectsNumber(),returnGPSFromView());
-    }
-
-
-    public void deleteData(Data<? extends CadastralObject> dataToDelete) {
-        //this.model.delete(dataToDelete);
-        // TODO
-    }
-
-    public void editeData(Data<? extends CadastralObject> dataToDelete) {
-//        if (dataToDelete.getData().isInstanceOf().equals(CadastralObject.TypeOfCadastralObject.LAND_PARCEL)) {
-//            this.model.editLandParcelData((Data<LandParcel>)dataToDelete,view.getNumberOfObject(),returnGPSFromView(),view.getAddDescription());
-//        } else {
-//            this.model.editRealEstateData((Data<RealEstate>)dataToDelete,view.getNumberOfObject(),returnGPSFromView(),view.getAddDescription());
-//        }
-        // TODO
-    }
-
-    public ArrayList<? extends CadastralObject> showData(Data<? extends CadastralObject> data) {
-
-//        if (data.getData().isInstanceOf().equals(CadastralObject.TypeOfCadastralObject.LAND_PARCEL)) {
-//            return this.model.returnAllIncludingEstates((Data<LandParcel>)data);
-//        } else {
-//            return this.model.returnAllIncludingParcels((Data<RealEstate>)data);
-//        }
-        return null;
-        //TODO
-    }
-
-
-    /**
+    /*
      * Private methods for work with data
      */
 
@@ -589,20 +471,6 @@ public class Controller {
     }
 
     /**
-     * save data
-     */
-    public void saveData() {
-        //this.model.saveTrees(view.getTextSaveData());
-        // TODO
-    }
-
-    public void loadData() {
-//        this.model.loadTrees(view.getTextLoadData());
-//        // TODO
-    }
-
-
-    /**
      * change view of some items according to value of combobox
      */
     private void returnAction(String parString) {
@@ -619,18 +487,6 @@ public class Controller {
                 view.getNumberOfObjectFiled().setVisible(false);
                 view.updateList(returnStringOfFile());
             }
-//            case "Find by point" -> {
-////                view.getCoordinatesTwoPanel().setEnabled(false);
-////                for (Component cp : view.getCoordinatesTwoPanel().getComponents() ) {
-////                    cp.setEnabled(false);
-////                }
-//                manageCoordinateTwoPanel(false);
-//                manageFindObjectPanel(true);
-//            }
-//            case "Find in area" -> {
-//                manageCoordinateTwoPanel(true);
-//                manageFindObjectPanel(false);
-//            }
         }
     }
 
@@ -645,14 +501,6 @@ public class Controller {
     }
 
     private void changeEditView(Boolean bol) {
-//        view.getMainPanel().setVisible(true);
-//        view.getAddObjectPanel().setVisible(true);
-//        view.getTypeOfObjectPanel().setVisible(false);
-//        view.getOutputPanel().setVisible(false);
-//        view.getIOPanel().setBorder(BorderFactory.createTitledBorder("Edit data"));
-//        view.getConfirmButtonDown().setText("Edit");
-//        view.getConfirmButton().setVisible(false);
-//        manageCoordinateTwoPanel(true);
         view.getMainPanel().setVisible(bol);
         view.getAddObjectPanel().setVisible(bol);
         view.getTypeOfObjectPanel().setVisible(!bol);
@@ -724,12 +572,5 @@ public class Controller {
     private void setRealEstateData(RealEstate data) {
         view.setAddDescription(data.getDescription());
         view.setNumberOfObject(data.getSerialNumber());
-    }
-
-    public void manageFindObjectPanel(Boolean man) {
-        view.getTypeOfFindedObjectPanel().setEnabled(man);
-        for (Component cp : view.getTypeOfFindedObjectPanel().getComponents() ) {
-            cp.setEnabled(man);
-        }
     }
 }
