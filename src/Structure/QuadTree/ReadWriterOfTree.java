@@ -14,12 +14,12 @@ import java.util.UUID;
 
 public class ReadWriterOfTree {
 
-    private QuadTree<RealEstate> treeRealEstate;
-    private QuadTree<LandParcel> treeLandParcel;
+    private QuadTree<CadastralObjectData> treeRealEstate;
+    private QuadTree<CadastralObjectData> treeLandParcel;
     private GPS[] parTreeREGPS;
     private GPS[] parTreeLPGPS;
 
-    public ReadWriterOfTree(QuadTree<RealEstate> parTreeRE, QuadTree<LandParcel> parTreeLP,
+    public ReadWriterOfTree(QuadTree<CadastralObjectData> parTreeRE, QuadTree<CadastralObjectData> parTreeLP,
                             GPS[] parTreeREGPS, GPS[] parTreeLPGPS) {
         this.treeRealEstate = parTreeRE;
         this.treeLandParcel = parTreeLP;
@@ -27,11 +27,11 @@ public class ReadWriterOfTree {
         this.parTreeLPGPS = parTreeLPGPS;
     }
 
-    public QuadTree<RealEstate> getTreeRealEstate() {
+    public QuadTree<CadastralObjectData> getTreeRealEstate() {
         return this.treeRealEstate;
     }
 
-    public QuadTree<LandParcel> getTreeLandParcel() {
+    public QuadTree<CadastralObjectData> getTreeLandParcel() {
         return this.treeLandParcel;
     }
 
@@ -40,8 +40,8 @@ public class ReadWriterOfTree {
 
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(parCsvFilePath))) {
 
-            List<Data<RealEstate>> dataEstate = this.treeRealEstate.getAllDataInSubTree(this.treeRealEstate.getRoot());
-            List<Data<LandParcel>> dataParcel = this.treeLandParcel.getAllDataInSubTree(this.treeLandParcel.getRoot());
+            List<Data<CadastralObjectData>> dataEstate = this.treeRealEstate.getAllDataInSubTree(this.treeRealEstate.getRoot());
+            List<Data<CadastralObjectData>> dataParcel = this.treeLandParcel.getAllDataInSubTree(this.treeLandParcel.getRoot());
 
             String[] infoEstate = this.returnTreeDataInStringArray(this.treeRealEstate, this.parTreeREGPS);
             for (int i = 0; i < infoEstate.length; i++) {
@@ -62,7 +62,7 @@ public class ReadWriterOfTree {
             writer.write("\n");
 
 
-            for (Data<? extends CadastralObject> data : dataEstate) {
+            for (Data<CadastralObjectData> data : dataEstate) {
                 String[] row = this.returnDataToStringArray(data);
 
                 for (int i = 0; i < row.length; i++) {
@@ -74,7 +74,7 @@ public class ReadWriterOfTree {
                 writer.write("\n");
             }
 
-            for (Data<? extends CadastralObject> data : dataParcel) {
+            for (Data<CadastralObjectData> data : dataParcel) {
                 String[] row = this.returnDataToStringArray(data);
 
                 for (int i = 0; i < row.length; i++) {
@@ -85,17 +85,17 @@ public class ReadWriterOfTree {
                 }
                 writer.write("\n");
             }
-            System.out.println("dala sa ulozili");
+            System.out.println("data saved to quad tree");
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
     public void readData(String parCsvFilePath) {
-    //    String[] str = {"primary key","coooralowerX","coorsupprX","coorsloewrY","coorsupperY","(type)","objectNumber","desc"};
+        //String[] str = {"primary key","coooralowerX","coorsupprX","coorsloewrY","coorsupperY","(type)","objectNumber","desc"};
 
-        QuadTree<RealEstate> newRealEstateTree;
-        QuadTree<LandParcel> newLandParcelTree;
+        QuadTree<CadastralObjectData> newRealEstateTree;
+        QuadTree<CadastralObjectData> newLandParcelTree;
 
 
         try (BufferedReader reader = new BufferedReader(new FileReader(parCsvFilePath))) {
@@ -103,7 +103,7 @@ public class ReadWriterOfTree {
 
             String realEstateInformation = reader.readLine();
             String[] infoEstate = realEstateInformation.split(";");
-            newRealEstateTree = new QuadTree<RealEstate>(
+            newRealEstateTree = new QuadTree<>(
                     Double.parseDouble(infoEstate[2]),
                     Double.parseDouble(infoEstate[3]),
                     Double.parseDouble(infoEstate[4]),
@@ -125,7 +125,7 @@ public class ReadWriterOfTree {
 
             String landParcelInformation = reader.readLine();
             String[] infoParcel = landParcelInformation.split(";");
-            newLandParcelTree = new QuadTree<LandParcel>(
+            newLandParcelTree = new QuadTree<>(
                     Double.parseDouble(infoParcel[2]),
                     Double.parseDouble(infoParcel[3]),
                     Double.parseDouble(infoParcel[4]),
@@ -148,50 +148,49 @@ public class ReadWriterOfTree {
 
 
             //String[] str = {"primary key","coooralowerX","coorsupprX","coorsloewrY","coorsupperY","(type)","objectNumber","desc"};
+            // ","coooralowerX","coorsupprX","coorsloewrY","coorsupperY","ID", primary key
 
-//            MapCoordinates mapEstateTree = new MapCoordinates(rootRE);
-//            for (int i = 0; i < countOfItemInEstateTree; i++) {
-//                line = reader.readLine();
-//                String[] values = line.split(";");
-//                Coordinates newCoordinates = new Coordinates(
-//                        Double.parseDouble(values[1]),
-//                        Double.parseDouble(values[2]),
-//                        Double.parseDouble(values[3]),
-//                        Double.parseDouble(values[4]));
-//
-//                // Java code to illustrate toString() method
-//                UUID uuid = UUID.fromString(values[0]);
-//                GPS[] newGps = mapEstateTree.getGPSValue(newCoordinates);
-//                RealEstate newRealEstate = new RealEstate(
-//                        values[7],newGps,Integer.parseInt(values[6]));
-//                Data<RealEstate> dataToInsert = new Data(newRealEstate,newCoordinates,uuid);
-//                newRealEstateTree.insert(dataToInsert);
-//            }
-//
-//            MapCoordinates mapLandParcel = new MapCoordinates(rootLP);
-//            for (int i = 0; i < countOfItemInLandTree; i++) {
-//                line = reader.readLine();
-//                String[] values = line.split(";");
-//                Coordinates newCoordinates = new Coordinates(
-//                        Double.parseDouble(values[1]),
-//                        Double.parseDouble(values[2]),
-//                        Double.parseDouble(values[3]),
-//                        Double.parseDouble(values[4]));
-//
-//                // Java code to illustrate toString() method
-//                UUID uuid = UUID.fromString(values[0]);
-//                GPS[] newGps = mapLandParcel.getGPSValue(newCoordinates);
-//                LandParcel newLandParcel = new LandParcel(
-//                        values[7],newGps,Integer.parseInt(values[6]));
-//                Data<LandParcel> dataToInsert = new Data(newLandParcel,newCoordinates,uuid);
-//                newLandParcelTree.insert(dataToInsert);
-//            }
-//
-//            this.treeLandParcel = newLandParcelTree;
-//            this.treeRealEstate = newRealEstateTree;
-//            this.parTreeREGPS = rootRE;
-//            this.parTreeLPGPS = rootRE;
-            System.out.println("data loaded");
+            MapCoordinates mapEstateTree = new MapCoordinates(rootRE);
+            for (int i = 0; i < countOfItemInEstateTree; i++) {
+                line = reader.readLine();
+                String[] values = line.split(";");
+                Coordinates newCoordinates = new Coordinates(
+                        Double.parseDouble(values[0]),
+                        Double.parseDouble(values[1]),
+                        Double.parseDouble(values[2]),
+                        Double.parseDouble(values[3]));
+
+                // Java code to illustrate toString() method
+                UUID uuid = UUID.fromString(values[5]);
+                GPS[] newGps = mapEstateTree.getGPSValue(newCoordinates);
+                CadastralObjectData newRealEstate = new CadastralObjectData(Integer.parseInt(values[4]),newGps);
+                Data<CadastralObjectData> dataToInsert = new Data(newRealEstate,newCoordinates,uuid);
+                newRealEstateTree.insert(dataToInsert);
+            }
+
+            MapCoordinates mapLandParcel = new MapCoordinates(rootLP);
+            for (int i = 0; i < countOfItemInLandTree; i++) {
+                line = reader.readLine();
+                String[] values = line.split(";");
+                Coordinates newCoordinates = new Coordinates(
+                        Double.parseDouble(values[0]),
+                        Double.parseDouble(values[1]),
+                        Double.parseDouble(values[2]),
+                        Double.parseDouble(values[3]));
+
+                // Java code to illustrate toString() method
+                UUID uuid = UUID.fromString(values[5]);
+                GPS[] newGps = mapLandParcel.getGPSValue(newCoordinates);
+                CadastralObjectData newRealEstate = new CadastralObjectData(Integer.parseInt(values[4]),newGps);
+                Data<CadastralObjectData> dataToInsert = new Data(newRealEstate,newCoordinates,uuid);
+                newLandParcelTree.insert(dataToInsert);
+            }
+
+            this.treeLandParcel = newLandParcelTree;
+            this.treeRealEstate = newRealEstateTree;
+            this.parTreeREGPS = rootRE;
+            this.parTreeLPGPS = rootRE;
+            System.out.println("data from quad tree loaded");
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -201,21 +200,16 @@ public class ReadWriterOfTree {
     }
 
 
-    public String[] returnDataToStringArray(Data<? extends CadastralObject> parData){
-//        String[] coors = parData.getCoordinates().returnCoordinatesInString();
-//        String[] object = parData.getData().toListOfString();
-//        String returnString = String.valueOf(parData.getPrimaryKey());
+    public String[] returnDataToStringArray(Data<CadastralObjectData> parData){
+        String[] coors = parData.getCoordinates().returnCoordinatesInString();
+        String object = parData.getData().toListOfString();
+        String returnString = String.valueOf(parData.getPrimaryKey());
 
-//        String[] result = Arrays.copyOf(new String[]{returnString}, 1 + object.length + coors.length);
-//        System.arraycopy(coors, 0, result, 1, coors.length);
-//        System.arraycopy(object, 0, result, 1 + coors.length, object.length);
-//
-//        return result;
-        // TODO
-        return null;
+        String[] concatenatedItems = new String[]{String.join(";", coors), object, returnString};
+        return concatenatedItems;
     }
 
-    public String[] returnTreeDataInStringArray(QuadTree<? extends CadastralObject> parTree,GPS[] parSur) {
+    public String[] returnTreeDataInStringArray(QuadTree<CadastralObjectData> parTree,GPS[] parSur) {
 
         String[] gps1 = parSur[0].returnAsStringArray();
         String[] gps2 = parSur[1].returnAsStringArray();
@@ -251,11 +245,11 @@ public class ReadWriterOfTree {
         }
     }
 
-    public QuadTree<LandParcel> returnLandParcelTree() {
+    public QuadTree<CadastralObjectData> returnLandParcelTree() {
         return this.treeLandParcel;
     }
 
-    public QuadTree<RealEstate> returnRealEstateTree() {
+    public QuadTree<CadastralObjectData> returnRealEstateTree() {
         return this.treeRealEstate;
     }
 

@@ -45,6 +45,8 @@ public class Controller {
         this.view.addLoadDataButtonListener(new LoadDataListener());
         this.view.addSaveDataButtonListener(new SaveDataListener());
         this.view.addCreateDHTreeButtonListener(new CreateDHListener());
+        this.view.addSaveAllFilesButtonListener(new SaveAllDataListener());
+        this.view.addLoadAllFilesButtonListener(new LoadAllDataListener());
 //        this.view.addCheckboxListener(new CheckBoxListener());
     }
 
@@ -167,6 +169,7 @@ public class Controller {
             view.getTreePanel().setVisible(true);
             view.getMainPanel().setVisible(false);
             view.getOutputPanel().setVisible(false);
+            view.getLoadDataPanel().setVisible(false);
             view.getIOPanel().setBorder(BorderFactory.createTitledBorder("Create quad tree"));
         }
     }
@@ -284,6 +287,22 @@ public class Controller {
         }
     }
 
+    class SaveAllDataListener implements ActionListener{
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            save();
+        }
+    }
+
+    class LoadAllDataListener implements ActionListener{
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            load();
+        }
+    }
+
 //    /**
 //     * Output panel listener
 //     */
@@ -331,9 +350,9 @@ public class Controller {
 
     public void createTrie() {
         if (view.getTypeOfObjectDHValue().equals("Real Estate")) {
-            this.model.inicializeDynamicHashingForRealEstates(view.getMainFileBlockFactor(),view.getOverfillingFileBlockFactor(),"MainFileRealEstate.bin","OverfillingFileRealEstate.bin");
+            this.model.inicializeDynamicHashingForRealEstates(view.getMainFileBlockFactor(),view.getOverfillingFileBlockFactor(),"realEstate","realEstate");
         } else {
-            this.model.inicializeDynamicHashingForLandParcels(view.getMainFileBlockFactor(),view.getOverfillingFileBlockFactor(),"MainFileLandParcel.bin","OverfillingFileLandParcel.bin");
+            this.model.inicializeDynamicHashingForLandParcels(view.getMainFileBlockFactor(),view.getOverfillingFileBlockFactor(),"landParcel","landParcel");
         }
     }
 
@@ -386,6 +405,14 @@ public class Controller {
         } else {
             return this.model.returnSeqenceOutput("L");
         }
+    }
+
+    public void save() {
+        this.model.save(view.getNameForSaveDataValue());
+    }
+
+    public void load() {
+        this.model.load(view.getNameForLoadDataValue());
     }
 
 

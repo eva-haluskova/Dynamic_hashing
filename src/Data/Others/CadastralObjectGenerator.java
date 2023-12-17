@@ -121,4 +121,12 @@ public class CadastralObjectGenerator {
     public void returnBackNextRealEstateId() {
         this.realEstateId--;
     }
+
+    public void setLandParcelId(int parId) {
+        this.landParcelId = parId;
+    }
+
+    public void setRealEstateId(int parId) {
+        this.realEstateId = parId;
+    }
 }

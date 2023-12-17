@@ -14,6 +14,7 @@ import Structure.QuadTree.ReadWriterOfTree;
 //import Structure.QuadTree.ReadWriterOfTree;
 
 import javax.imageio.event.IIOReadProgressListener;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Random;
@@ -41,18 +42,6 @@ public class Model {
 
     public Model() {
         this.generator = new CadastralObjectGenerator();
-
-        GPS gpsOne = new GPS("N",10,"W",10);
-        GPS gpsTwo = new GPS("S",10,"E",10);
-        GPS[] gpsFirst = {gpsOne, gpsTwo};
-        this.createLandParcelQuadTree(gpsFirst,5);
-        this.createRealEstateQuadTree(gpsFirst,5);
-        this.inicializeDynamicHashingForLandParcels(2,3,"mainLand.bin", "overfillingLand.bin");
-        this.inicializeDynamicHashingForRealEstates(2,3,"mainEstates.bin","overfillingEstates.bin");
-        this.generateRealEstates(10,5,gpsFirst);
-        System.out.println("idem vkladat druhe dao");
-        this.generateLandParcels(10,5,gpsFirst);
-
     }
 
     /**
@@ -486,17 +475,67 @@ public class Model {
     }
 
 
-    private void saveDynamicHashing() {
+    private void saveDynamicHashing(String parName) {
+        this.realEstateDynamicHashing.saveTrie(parName + "DHE.txt");
+        this.landParcelDynamicHashing.saveTrie(parName + "DHP.txt");
+    }
+
+    private void loadDynamicHashing(String parName) {
+        this.landParcelDynamicHashing = new DynamicHashing<>(parName + "DHP.txt", LandParcel.class);
+        this.realEstateDynamicHashing = new DynamicHashing<>(parName + "DHE.txt", RealEstate.class);
 
     }
 
-    private void saveQuadTrees() {
-
+    private void saveQuadTrees(String parName) {
+        if (this.readWriterOfTree == null) {
+            this.readWriterOfTree = new ReadWriterOfTree(
+                    this.realEstateQuadTree,
+                    this.landParcelQuadTree,
+                    this.realEstateTreeGPS,
+                    this.landParcelTreeGPS);
+        }
+        this.readWriterOfTree.writeData(parName);
     }
 
-    public void save() {
+    private void loadQuadTrees(String parName) {
+        if (this.readWriterOfTree == null) {
+            this.readWriterOfTree = new ReadWriterOfTree(this.realEstateQuadTree, this.landParcelQuadTree, this.realEstateTreeGPS, this.landParcelTreeGPS);
+        }
+        this.readWriterOfTree.readData(parName);
 
+        this.landParcelQuadTree = this.readWriterOfTree.getTreeLandParcel();
+        this.landParcelTreeGPS = this.readWriterOfTree.getParTreeLPGPS();
+        this.mapParcelTree = new MapCoordinates(this.landParcelTreeGPS);
+
+        this.realEstateQuadTree = this.readWriterOfTree.getTreeRealEstate();
+        this.realEstateTreeGPS = this.readWriterOfTree.getParTreeREGPS();
+        this.mapEstateTree = new MapCoordinates(this.realEstateTreeGPS);
     }
 
+    public void save(String parNameForFiles) {
+        this.saveQuadTrees(parNameForFiles + "QTInfo.txt");
+        this.saveDynamicHashing(parNameForFiles);
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(parNameForFiles + "Id.txt"))) {
+            writer.write(Integer.toString(this.generator.getNextRealEstateId()));
+            writer.write(";");
+            writer.write(Integer.toString(this.generator.getNextLandParcelId()));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
+    public void load(String parNameForFiles) {
+        this.loadQuadTrees(parNameForFiles + "QTInfo.txt");
+        this.loadDynamicHashing(parNameForFiles);
+        String line;
+        try (BufferedReader reader = new BufferedReader(new FileReader(parNameForFiles + "Id.txt"))) {
+            line = reader.readLine();
+            String[] ides = line.split(";");
+            this.generator.setRealEstateId(Integer.parseInt(ides[1]));
+            this.generator.setLandParcelId(Integer.parseInt(ides[1]));
+        } catch (IOException e) {
+            e.printStackTrace();
+
+        }
+    }
 }

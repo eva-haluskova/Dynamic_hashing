@@ -126,6 +126,13 @@ public class View extends JFrame {
     private JTextField IDNumber;
     private JComboBox TypeOfObjectIDH;
     private JButton CreateDH;
+    private JLabel Title;
+    private JLabel NameForLoadData;
+    private JLabel NameForSaveData;
+    private JTextField NameForLoadDataValue;
+    private JTextField NameForSaveDataValue;
+    private JButton LoadAllFiles;
+    private JButton SaveAllFiles;
     JList<String> outputList;
     DefaultListModel outputModel;
 
@@ -282,6 +289,10 @@ public class View extends JFrame {
     /**
      * Getters of JPanels
      */
+
+    public JPanel getLoadDataPanel() {
+        return LoadDataPanel;
+    }
     public JPanel getRootPanel() {
         return RootPanel;
     }
@@ -602,6 +613,22 @@ public class View extends JFrame {
 
     void addCreateDHTreeButtonListener(ActionListener createDHListener) {
         CreateDH.addActionListener(createDHListener);
+    }
+
+    public String getNameForLoadDataValue() {
+        return NameForLoadDataValue.getText();
+    }
+
+    public String getNameForSaveDataValue() {
+        return NameForSaveDataValue.getText();
+    }
+
+    void addLoadAllFilesButtonListener(ActionListener loadAllDataListener) {
+        LoadAllFiles.addActionListener(loadAllDataListener);
+    }
+
+    void addSaveAllFilesButtonListener(ActionListener saveAllDataListener) {
+        SaveAllFiles.addActionListener(saveAllDataListener);
     }
 
     /**

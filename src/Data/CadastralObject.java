@@ -200,4 +200,16 @@ public abstract class CadastralObject implements IRecord {
         }
         return sb.toString();
     }
+
+    protected static BitSet getSubBitSet(BitSet originalBitSet, int fromIndex, int toIndex) {
+        BitSet subBitSet = new BitSet(toIndex - fromIndex);
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            if (originalBitSet.get(i)) {
+                subBitSet.set(i - fromIndex);
+            }
+        }
+
+        return subBitSet;
+    }
 }

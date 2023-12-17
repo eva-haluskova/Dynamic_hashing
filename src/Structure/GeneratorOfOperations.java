@@ -33,10 +33,10 @@ public abstract class GeneratorOfOperations<T extends IRecord> {
 
     public boolean findAllInserted() {
 
-        System.out.println("Vsetky data ktore som inzertovala: ");
-        for (int i = 0; i < this.insertedRecords.size(); i++) {
-            System.out.println(this.insertedRecords.get(i));
-        }
+//        System.out.println("Vsetky data ktore som inzertovala: ");
+//        for (int i = 0; i < this.insertedRecords.size(); i++) {
+//            System.out.println(this.insertedRecords.get(i));
+//        }
 
         ArrayList<IRecord> foundArray = new ArrayList<>();
         for (IRecord act : this.insertedRecords) {
@@ -46,10 +46,10 @@ public abstract class GeneratorOfOperations<T extends IRecord> {
             }
         }
 
-        System.out.println("Vsetky data ktore som nasla podla findu v trie: ");
-        for (int i = 0; i < foundArray.size(); i++) {
-            System.out.println(foundArray.get(i));
-        }
+//        System.out.println("Vsetky data ktore som nasla podla findu v trie: ");
+//        for (int i = 0; i < foundArray.size(); i++) {
+//            System.out.println(foundArray.get(i));
+//        }
 
         if (foundArray.containsAll(this.insertedRecords) && foundArray.size() == this.insertedRecords.size()) {
             System.out.println("Find of all items was success!!");
@@ -108,15 +108,15 @@ public abstract class GeneratorOfOperations<T extends IRecord> {
 
     public boolean checkIfTheyAreSame(ArrayList<IRecord> arrayToCompare) {
 
-        System.out.println("Vsetky data ktore som inzertovala: ");
-        for (int i = 0; i < this.insertedRecords.size(); i++) {
-            System.out.println(this.insertedRecords.get(i));
-        }
-
-        System.out.println("return all data form trie");
-        for (int i = 0; i < arrayToCompare.size(); i++) {
-            System.out.println(arrayToCompare.get(i));
-        }
+//        System.out.println("Vsetky data ktore som inzertovala: ");
+//        for (int i = 0; i < this.insertedRecords.size(); i++) {
+//            System.out.println(this.insertedRecords.get(i));
+//        }
+//
+//        System.out.println("return all data form trie");
+//        for (int i = 0; i < arrayToCompare.size(); i++) {
+//            System.out.println(arrayToCompare.get(i));
+//        }
 
 
 

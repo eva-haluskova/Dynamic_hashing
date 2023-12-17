@@ -165,35 +165,17 @@ public class RealEstate extends CadastralObject {
             bitSet.set(i, isBitSet);
         }
 
-
         if (bitSet.length() < 32) {
             bitSet.set(bitSet.length(),32,true);
         }
-        //  System.out.println(bitSet);
-        // System.out.println(bitSet.length());
-        // System.out.println("----------");
         BitSet n = getSubBitSet(bitSet,0,2);
 
         if (n.length() < 2) {
             n.set(n.length(),2,true);
         }
 
-        //System.out.println(n);
-        //System.out.println(n.length());
         return n;
 
-    }
-
-    public static BitSet getSubBitSet(BitSet originalBitSet, int fromIndex, int toIndex) {
-        BitSet subBitSet = new BitSet(toIndex - fromIndex);
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            if (originalBitSet.get(i)) {
-                subBitSet.set(i - fromIndex);
-            }
-        }
-
-        return subBitSet;
     }
 
     /**

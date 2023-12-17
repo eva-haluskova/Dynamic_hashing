@@ -3,8 +3,8 @@ package Structure.DynamicHashing;
 import Structure.DynamicHashing.Nodes.ExternalNode;
 import Structure.DynamicHashing.Nodes.InternalNode;
 import Structure.DynamicHashing.Nodes.Node;
-import java.io.IOException;
-import java.io.RandomAccessFile;
+
+import java.io.*;
 import java.util.*;
 
 /**
@@ -17,6 +17,9 @@ public class DynamicHashing<T extends IRecord> {
     private int overfillingFileBlockFactor;
     private int firstEmptyBlockMainFile;
     private int firstEmptyBlockOverfillingFile;
+
+    private String rawMainName;
+    private String rawOverfillingName;
     private RandomAccessFile rawMain;
     private RandomAccessFile rawOverfillFile;
     private Class<T> type;
@@ -47,8 +50,16 @@ public class DynamicHashing<T extends IRecord> {
         this.mainFileBlockFactor = parMainFileBlockFactor;
         this.overfillingFileBlockFactor = parOverfillingFileBlockFactor;
 
+        this.rawMainName = parNameOfMainFile + "MainFile.bin";
+        this.rawOverfillingName = parNameOfOverfillingFile + "OverfillingFile.bin";
+
         this.type = type;
-        this.inicializeFiles(parNameOfMainFile, parNameOfOverfillingFile);
+        this.inicializeFiles(rawMainName, rawOverfillingName);
+    }
+
+    public DynamicHashing(String parNameOfFileToLoad, Class<T> type) {
+        this.type = type;
+        this.loadTrie(parNameOfFileToLoad);
     }
 
     /**
@@ -115,7 +126,7 @@ public class DynamicHashing<T extends IRecord> {
     public boolean insert(IRecord parDataToInsert) {
 
         if (this.root == null) {
-            ExternalNode node = new ExternalNode(null);
+            ExternalNode node = new ExternalNode((Node) null);
             this.root = node;
             ((ExternalNode) this.root).setAddress(this.getAddressOfNextEmptyBlockInMainFile());
 
@@ -328,25 +339,26 @@ public class DynamicHashing<T extends IRecord> {
         // chcem editovat nejaky i record, sem si poslem uz irecord, ktory si najdem podla ide ale sem uz pozielam
         // i record so zmenenymi datami.
         Result res = this.findRet(parRecordToEdit);
-
-        Block<T> block = this.readBlockFromFile(this.rawMain, this.mainFileBlockFactor, res.getExternalNode().getAddress());
-        if (block.getNextLinkedBlock() == -1) {
-            block.editRecord(parRecordToEdit);
-            this.writeBlockToFile(this.rawMain,res.getExternalNode().getAddress(),block);
-            return true;
-        } else {
-            if (block.editRecord(parRecordToEdit)) {
-                this.writeBlockToFile(this.rawMain,res.getExternalNode().getAddress(),block);
+        if (res != null) {
+            Block<T> block = this.readBlockFromFile(this.rawMain, this.mainFileBlockFactor, res.getExternalNode().getAddress());
+            if (block.getNextLinkedBlock() == -1) {
+                block.editRecord(parRecordToEdit);
+                this.writeBlockToFile(this.rawMain, res.getExternalNode().getAddress(), block);
                 return true;
-            }
-            int address = block.getNextLinkedBlock();
-            while(address != -1) {
-                block = this.readBlockFromFile(this.rawOverfillFile, this.overfillingFileBlockFactor, block.getNextLinkedBlock());
+            } else {
                 if (block.editRecord(parRecordToEdit)) {
-                    this.writeBlockToFile(rawOverfillFile,address,block);
+                    this.writeBlockToFile(this.rawMain, res.getExternalNode().getAddress(), block);
                     return true;
                 }
-                address = block.getNextLinkedBlock();
+                int address = block.getNextLinkedBlock();
+                while (address != -1) {
+                    block = this.readBlockFromFile(this.rawOverfillFile, this.overfillingFileBlockFactor, block.getNextLinkedBlock());
+                    if (block.editRecord(parRecordToEdit)) {
+                        this.writeBlockToFile(rawOverfillFile, address, block);
+                        return true;
+                    }
+                    address = block.getNextLinkedBlock();
+                }
             }
         }
         return false;
@@ -1042,8 +1054,160 @@ public class DynamicHashing<T extends IRecord> {
         }
     }
 
-    public void saveTrie() {
-        // inorder prehliadka
+    private void reinicializeFiles(String parNameOfMainFile, String parNameOfOverfillingFile) {
+        try {
+            this.rawMain = new RandomAccessFile(parNameOfMainFile, "rw");
+            this.rawOverfillFile = new RandomAccessFile(parNameOfOverfillingFile, "rw");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
+
+    public void saveTrie(String parPathFile) {
+        this.finishWorkWithTrie();
+
+        // pre order
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(parPathFile))) {
+            writer.write(Integer.toString(this.mainFileBlockFactor));
+            writer.write(";");
+            writer.write(Integer.toString(this.overfillingFileBlockFactor));
+            writer.write("\n");
+            writer.write(Integer.toString(this.firstEmptyBlockMainFile));
+            writer.write(";");
+            writer.write(Integer.toString(this.firstEmptyBlockOverfillingFile));
+            writer.write("\n");
+
+//            File tempfile = new File(this.rawMainName);
+//            File datafile = new File(parPathFile + this.rawMainName);
+//            tempfile.renameTo(datafile);
+
+
+           // writer.write(parPathFile + this.rawMainName);
+            writer.write(this.rawMainName);
+            System.out.println("Ukladam hlavny subor s nazvom: " + this.rawMainName);
+            writer.write(";");
+            writer.write(this.rawOverfillingName);
+            System.out.println("Ukladam preplnovak s nazvom: " + this.rawOverfillingName);
+            writer.write("\n");
+
+
+            if (root == null) {
+                writer.close();
+                return;
+            }
+
+            Stack<String> paths = new Stack<>();
+            paths.push("");
+
+            Stack<Node> stack = new Stack<>();
+            stack.push(root);
+
+            while (!stack.isEmpty()) {
+                Node current = stack.pop();
+                String path = paths.pop();
+
+                // If it's an internal node, push its children and update the path
+                if (current instanceof InternalNode) {
+                    stack.push(((InternalNode) current).getRightSon());
+                    paths.push(path + "1");
+
+                    stack.push(((InternalNode) current).getLeftSon());
+                    paths.push(path + "0");
+                } else { // It's an external node
+
+                    writer.write(path);
+                    writer.write(";");
+                    writer.write(Integer.toString(((ExternalNode) current).getAddress()));
+                    writer.write(";");
+                    writer.write(Integer.toString(((ExternalNode) current).getCountOnAddress()));
+                    writer.write(";");
+                    writer.write(Integer.toString(((ExternalNode) current).getCountOfLinkedBlocks()));
+                    writer.write("\n");
+
+                    System.out.println("This node has data: ");
+                    System.out.println("Path: " + path);
+                    System.out.println(((ExternalNode) current).getAddress());
+                    System.out.println(((ExternalNode) current).getCountOnAddress());
+                    System.out.println(((ExternalNode) current).getCountOfLinkedBlocks());
+                }
+            }
+            System.out.println("Successfully saved dynamic hasning!");
+            writer.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void loadTrie(String parPathFile) {
+        String line;
+        try (BufferedReader reader = new BufferedReader(new FileReader(parPathFile))) {
+            line = reader.readLine();
+            String[] blockFactors = line.split(";");
+            this.mainFileBlockFactor = Integer.parseInt(blockFactors[0]);
+            this.overfillingFileBlockFactor = Integer.parseInt(blockFactors[1]);
+            line = reader.readLine();
+            String[] emptyBlocks = line.split(";");
+            this.firstEmptyBlockMainFile = Integer.parseInt(emptyBlocks[0]);
+            this.firstEmptyBlockOverfillingFile = Integer.parseInt(emptyBlocks[1]);
+            line = reader.readLine();
+            String[] namesOfFiles = line.split(";");
+            this.rawMainName = namesOfFiles[0];
+            System.out.println("Nazov hlavenho suboru: " + this.rawMainName);
+            this.rawOverfillingName = namesOfFiles[1];
+            System.out.println("Nazov preplnovaku: " + this.rawOverfillingName);
+            this.reinicializeFiles(this.rawMainName,this.rawOverfillingName);
+
+            this.root = new InternalNode(null);
+
+            while ((line = reader.readLine()) != null) {
+                // nacitavam uzly
+
+                String[] info = line.split(";");
+                String path = info[0];
+
+                Node current = this.root;
+
+
+                // Traverse the tree according to the path
+                int index = 1;
+
+                for (char c : path.toCharArray()) {
+                    // idem do lava
+                    if (c == '0') {
+                        if (((InternalNode)current).getLeftSon() == null) {
+                            if (index == path.length()) {
+                                ((InternalNode) current).setLeftSon(new ExternalNode(current));
+                            } else {
+                                ((InternalNode) current).setLeftSon(new InternalNode(current));
+                            }
+                        }
+                        current = ((InternalNode) current).getLeftSon();
+                        // idem doprava
+                    } else if (c == '1') {
+
+                        if (((InternalNode)current).getRightSon() == null) {
+                            if (index == path.length()) {
+                                ((InternalNode) current).setRightSon(new ExternalNode(current));
+                            } else {
+                                ((InternalNode) current).setRightSon(new InternalNode(current));
+                            }
+                        }
+                        current = ((InternalNode) current).getRightSon();
+                    }
+                    index++;
+                }
+                ((ExternalNode)current).setAddress(Integer.parseInt(info[1]));
+                ((ExternalNode)current).setCountOnAddress(Integer.parseInt(info[2]));
+                ((ExternalNode)current).setCountOfLinkedBlocks(Integer.parseInt(info[3]));
+
+            }
+            System.out.println("Successfully loaded dynamicHashing");
+        } catch (IOException e) {
+            e.printStackTrace();
+
+        }
+    }
+
+
 
 }

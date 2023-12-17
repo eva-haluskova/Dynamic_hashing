@@ -35,4 +35,8 @@ public class CadastralObjectData {
             this.gpsCoordinates[1] = gpsCoordinates;
         }
     }
+
+    public String toListOfString() {
+        return Integer.toString(this.identityNumber);
+    }
 }

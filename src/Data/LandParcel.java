@@ -140,48 +140,19 @@ public class LandParcel extends CadastralObject {
 
     @Override
     public BitSet getHash() {
-        //int hashCode = Objects.hash(this.identityNumber);
-        //return BitSet.valueOf(new long[] {hashCode});
         int hashCode = Objects.hash(this.identityNumber);
+        //return BitSet.valueOf(new long[] {hashCode});
 
-        // Create a BitSet with a fixed length (e.g., 64 bits in this example)
-        BitSet bitSet = new BitSet(32); // Change the number to fit your required length
+        BitSet newBitset = BitSet.valueOf(new long[] {hashCode});
+        int lengthOfBitSet = 4;
 
-        // Set bits in the BitSet based on the hash code
-        for (int i = 0; i < 32; i++) { // Assuming integer hash code is 32 bits
-            boolean isBitSet = ((hashCode >> i) & 1) == 1;
-            bitSet.set(i, isBitSet);
+        BitSet n = getSubBitSet(newBitset,0,lengthOfBitSet);
+
+        if (n.length() < lengthOfBitSet) {
+            n.set(n.length(),lengthOfBitSet,true);
         }
 
-
-        if (bitSet.length() < 32) {
-            bitSet.set(bitSet.length(),32,true);
-        }
-      //  System.out.println(bitSet);
-       // System.out.println(bitSet.length());
-       // System.out.println("----------");
-        BitSet n = getSubBitSet(bitSet,0,2);
-
-        if (n.length() < 2) {
-            n.set(n.length(),2,true);
-        }
-
-        //System.out.println(n);
-        //System.out.println(n.length());
         return n;
-    }
-
-
-    public static BitSet getSubBitSet(BitSet originalBitSet, int fromIndex, int toIndex) {
-        BitSet subBitSet = new BitSet(toIndex - fromIndex);
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            if (originalBitSet.get(i)) {
-                subBitSet.set(i - fromIndex);
-            }
-        }
-
-        return subBitSet;
     }
 
     /**

@@ -1,7 +1,6 @@
 package Structure.DynamicHashing.Nodes;
 
-import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
+import java.io.*;
 
 /**
  * Represents external node which contain attributes for working with data.
@@ -18,6 +17,14 @@ public class ExternalNode extends Node {
         this.address = -1;
         this.countOfLinkedBlocks = 0;
         this.countOnAddress = 0;
+    }
+
+    public ExternalNode(byte[] parByteArray) {
+        this.fromByteArray(parByteArray);
+    }
+
+    public void setParent(Node parParent) {
+        this.parent = parParent;
     }
 
     public int getAddress() {
@@ -65,18 +72,33 @@ public class ExternalNode extends Node {
         this.countOfLinkedBlocks++;
     }
 
-    public void toByteArray() {
-
+    public byte[] toByteArray() {
+        ByteArrayOutputStream hlpByteArrayOutputStream = new ByteArrayOutputStream();
+        DataOutputStream hlpOutStream = new DataOutputStream(hlpByteArrayOutputStream);
+        try {
+            hlpOutStream.writeInt(this.address);
+            hlpOutStream.writeInt(this.countOnAddress);
+            hlpOutStream.writeInt(this.countOfLinkedBlocks);
+            return hlpByteArrayOutputStream.toByteArray();
+        } catch (IOException e) {
+            throw new IllegalStateException("Error during conversion to byte array.");
+        }
     }
 
     public void fromByteArray(byte[] parByteNode) {
-        ByteArrayOutputStream hlpByteArrayOutputStream = new ByteArrayOutputStream();
-        DataOutputStream hlpOutStream = new DataOutputStream(hlpByteArrayOutputStream);
+        ByteArrayInputStream hlpByteArrayInputStream = new ByteArrayInputStream(parByteNode);
+        DataInputStream hlpInStream = new DataInputStream(hlpByteArrayInputStream);
 
-//        try {
-//            hlpOutStream.write();
-//        } catch () {
-//
-//        }
+        try {
+            this.address = hlpInStream.readInt();
+            this.countOnAddress = hlpInStream.readInt();
+            this.countOfLinkedBlocks = hlpInStream.readInt();
+        } catch (IOException e) {
+            throw new IllegalStateException("Error during conversion from byte array.");
+        }
+    }
+
+    public int size() {
+        return Integer.BYTES * 3;
     }
 }
