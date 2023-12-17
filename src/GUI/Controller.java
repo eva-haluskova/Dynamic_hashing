@@ -47,6 +47,7 @@ public class Controller {
         this.view.addCreateDHTreeButtonListener(new CreateDHListener());
         this.view.addSaveAllFilesButtonListener(new SaveAllDataListener());
         this.view.addLoadAllFilesButtonListener(new LoadAllDataListener());
+        view.getLoadDataPanel().setVisible(false);
 //        this.view.addCheckboxListener(new CheckBoxListener());
     }
 
@@ -75,7 +76,7 @@ public class Controller {
             view.getCoordinatesTwoPanel().setVisible(true);
             view.getIDNumberFiled().setVisible(false);
             view.getLowerPanel().setPreferredSize(new Dimension(800,150));
-
+            view.getOtherPanel().setVisible(false);
         }
     }
 
@@ -103,6 +104,7 @@ public class Controller {
             view.getIDNumberFiled().setVisible(true);
             view.getIDNumberFiled().setBorder(BorderFactory.createTitledBorder("Id number"));
             view.getLowerPanel().setPreferredSize(new Dimension(800,300));
+            view.getOtherPanel().setVisible(false);
 
 
         }
@@ -132,7 +134,7 @@ public class Controller {
             view.getIDNumberFiled().setVisible(true);
             view.getIDNumberFiled().setBorder(BorderFactory.createTitledBorder("Id number"));
             view.getLowerPanel().setPreferredSize(new Dimension(800,300));
-
+            view.getOtherPanel().setVisible(false);
 
         }
     }
@@ -160,7 +162,7 @@ public class Controller {
             view.getIDNumberFiled().setVisible(true);
             view.getIDNumberFiled().setBorder(BorderFactory.createTitledBorder("Id number"));
             view.getLowerPanel().setPreferredSize(new Dimension(800,300));
-
+            view.getOtherPanel().setVisible(false);
         }
     }
 
@@ -171,6 +173,7 @@ public class Controller {
             view.getOutputPanel().setVisible(false);
             view.getLoadDataPanel().setVisible(false);
             view.getIOPanel().setBorder(BorderFactory.createTitledBorder("Create quad tree"));
+            view.getOtherPanel().setVisible(false);
         }
     }
 
@@ -203,7 +206,7 @@ public class Controller {
             view.getOutputPanel().setVisible(true);
             view.getTreePanel().setVisible(false);
             view.getIOPanel().setBorder(BorderFactory.createTitledBorder("Generate data"));
-            view.setTypeOfObjectChoose("Real Estate","Land Parcel", "Both");
+            view.setTypeOfObjectChoose("Real Estate","Land Parcel",null);
             view.getConfirmButton().setText("Generate");
             view.getNumberOfObjects().setVisible(true);
             view.getTypeOfFindedObjectPanel().setVisible(false);
@@ -217,7 +220,11 @@ public class Controller {
             view.getCoordinatesOnePanel().setVisible(true);
             view.getCoordinatesTwoPanel().setVisible(true);
             view.getIDNumberFiled().setVisible(false);
+            view.getOtherPanel().setVisible(false);
             view.getLowerPanel().setPreferredSize(new Dimension(800,150));
+//            for (Component cp : view.getCoordinatesTwoPanel().getComponents() ) {
+//////                    cp.setEnabled(false);
+//////                }
         }
     }
 
@@ -229,11 +236,9 @@ public class Controller {
             if (view.getConfirmButton().getText().equals("Find object")) {
                 //find();
                 view.updateList(findWithData());
-                System.out.println("Find data");
             } else if (view.getConfirmButton().getText().equals("Delete object")) {
                 delete();
                 view.updateList(returnStringOfFile());
-                System.out.println("Data deleted");
             } else if (view.getConfirmButton().getText().equals("Edit object")) {
                 changeEditView(true);
                 setEditValues();
@@ -350,9 +355,9 @@ public class Controller {
 
     public void createTrie() {
         if (view.getTypeOfObjectDHValue().equals("Real Estate")) {
-            this.model.inicializeDynamicHashingForRealEstates(view.getMainFileBlockFactor(),view.getOverfillingFileBlockFactor(),"realEstate","realEstate");
+            this.model.inicializeDynamicHashingForRealEstates(view.getMainFileBlockFactor(),view.getOverfillingFileBlockFactor(),"E","E");
         } else {
-            this.model.inicializeDynamicHashingForLandParcels(view.getMainFileBlockFactor(),view.getOverfillingFileBlockFactor(),"landParcel","landParcel");
+            this.model.inicializeDynamicHashingForLandParcels(view.getMainFileBlockFactor(),view.getOverfillingFileBlockFactor(),"P","P");
         }
     }
 
@@ -656,10 +661,14 @@ public class Controller {
         view.getConfirmButtonDown().setText("Edit");
         view.getConfirmButton().setVisible(!bol);
         manageCoordinateTwoPanel(bol);
-        view.getCoordinatesOnePanel().setVisible(true);
-        view.getCoordinatesTwoPanel().setVisible(true);
-        view.getLowerPanel().setPreferredSize(new Dimension(800,150));
-        view.getIDNumberFiled().setVisible(false);
+        view.getCoordinatesOnePanel().setVisible(bol);
+        view.getCoordinatesTwoPanel().setVisible(bol);
+        if (bol) {
+            view.getLowerPanel().setPreferredSize(new Dimension(800, 150));
+        } else {
+            view.getLowerPanel().setPreferredSize(new Dimension(800, 300));
+        }
+        view.getIDNumberFiled().setVisible(!bol);
     }
 
     private void setEditValues() {

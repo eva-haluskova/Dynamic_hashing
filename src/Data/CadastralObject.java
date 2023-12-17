@@ -5,6 +5,7 @@ import Structure.DynamicHashing.IRecord;
 import java.io.*;
 import java.text.DecimalFormat;
 import java.util.BitSet;
+import java.util.Objects;
 
 /**
  * Represent some cadastral object - in this case it could be Land Parcel or Real Estate.
@@ -211,5 +212,22 @@ public abstract class CadastralObject implements IRecord {
         }
 
         return subBitSet;
+    }
+
+    @Override
+    public BitSet getHash() {
+        int hashCode = Objects.hash(this.identityNumber);
+        //return BitSet.valueOf(new long[] {hashCode});
+
+        BitSet newBitset = BitSet.valueOf(new long[] {hashCode});
+        int lengthOfBitSet = 2;
+
+        BitSet n = getSubBitSet(newBitset,0,lengthOfBitSet);
+
+        if (n.length() < lengthOfBitSet) {
+            n.set(n.length(),lengthOfBitSet,true);
+        }
+
+        return n;
     }
 }

@@ -153,31 +153,6 @@ public class RealEstate extends CadastralObject {
         this.fromByteArray(parData);
     }
 
-    @Override
-    public BitSet getHash() {
-        int hashCode = Objects.hash(this.identityNumber);
-        //return BitSet.valueOf(new long[] {hashCode});
-        BitSet bitSet = new BitSet(32); // Change the number to fit your required length
-
-        // Set bits in the BitSet based on the hash code
-        for (int i = 0; i < 32; i++) { // Assuming integer hash code is 32 bits
-            boolean isBitSet = ((hashCode >> i) & 1) == 1;
-            bitSet.set(i, isBitSet);
-        }
-
-        if (bitSet.length() < 32) {
-            bitSet.set(bitSet.length(),32,true);
-        }
-        BitSet n = getSubBitSet(bitSet,0,2);
-
-        if (n.length() < 2) {
-            n.set(n.length(),2,true);
-        }
-
-        return n;
-
-    }
-
     /**
      * Getters and setters of attributes
      */

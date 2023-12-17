@@ -138,23 +138,6 @@ public class LandParcel extends CadastralObject {
         this.fromByteArray(parData);
     }
 
-    @Override
-    public BitSet getHash() {
-        int hashCode = Objects.hash(this.identityNumber);
-        //return BitSet.valueOf(new long[] {hashCode});
-
-        BitSet newBitset = BitSet.valueOf(new long[] {hashCode});
-        int lengthOfBitSet = 4;
-
-        BitSet n = getSubBitSet(newBitset,0,lengthOfBitSet);
-
-        if (n.length() < lengthOfBitSet) {
-            n.set(n.length(),lengthOfBitSet,true);
-        }
-
-        return n;
-    }
-
     /**
      * Getters and setters of attributes
      */

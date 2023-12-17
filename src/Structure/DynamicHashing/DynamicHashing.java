@@ -1078,23 +1078,23 @@ public class DynamicHashing<T extends IRecord> {
             writer.write("\n");
 
             File tempfileMain = new File(this.rawMainName);
-            File datafileMain = new File(parPathFile + this.rawMainName);
+            File datafileMain = new File(parPathFile + "MainFile.bin");
             tempfileMain.renameTo(datafileMain);
-            writer.write(parPathFile + this.rawMainName);
-
-            //writer.write(this.rawMainName);
-
-            System.out.println("Ukladam hlavny subor s nazvom: " + this.rawMainName);
+           // writer.write(parPathFile + this.rawMainName);
+            writer.write(parPathFile + "MainFile.bin");
+//
+//
+//            System.out.println("Ukladam hlavny subor s nazvom: " + this.rawMainName);
             writer.write(";");
 
             File tempfileOverifilling = new File(this.rawOverfillingName);
-            File datafileOverfilling = new File(parPathFile + this.rawOverfillingName);
+            File datafileOverfilling = new File(parPathFile + "OverfillingFile.bin");
             tempfileOverifilling.renameTo(datafileOverfilling);
-            writer.write(parPathFile + this.rawOverfillingName);
+//            writer.write(parPathFile + this.rawOverfillingName);
+            writer.write(parPathFile + "OverfillingFile.bin");
 
             //writer.write(this.rawOverfillingName);
 
-            System.out.println("Ukladam preplnovak s nazvom: " + this.rawOverfillingName);
             writer.write("\n");
 
 
@@ -1130,16 +1130,9 @@ public class DynamicHashing<T extends IRecord> {
                     writer.write(";");
                     writer.write(Integer.toString(((ExternalNode) current).getCountOfLinkedBlocks()));
                     writer.write("\n");
-
-                    System.out.println("This node has data: ");
-                    System.out.println("Path: " + path);
-                    System.out.println(((ExternalNode) current).getAddress());
-                    System.out.println(((ExternalNode) current).getCountOnAddress());
-                    System.out.println(((ExternalNode) current).getCountOfLinkedBlocks());
                 }
             }
             System.out.println("Successfully saved dynamic hasning!");
-            writer.close();
         } catch (IOException e) {
             e.printStackTrace();
         }

@@ -272,45 +272,53 @@ public class Model {
     public void deleteLandParcel(int parIdentityNumber) {
         LandParcel pomPar = new LandParcel(parIdentityNumber);
         LandParcel parcel = (LandParcel) this.landParcelDynamicHashing.find(pomPar);
-        int[] estatesToUpdate = parcel.getBelongingRealEstates();
-        for (int i = 0; i < estatesToUpdate.length; i++) {
-            RealEstate pomRel = new RealEstate(estatesToUpdate[i]);
-            RealEstate estate = (RealEstate) this.realEstateDynamicHashing.find(pomRel);
-            estate.deleteBelongingLandParcel(parIdentityNumber);
-            this.realEstateDynamicHashing.edit(estate);
-        }
-        this.landParcelDynamicHashing.delete(parcel);
-
-        // vymazanie data z quadstromu
-        ArrayList<Data<CadastralObjectData>> parcelsToDeleteInQuadTree = this.landParcelQuadTree.find(this.mapParcelTree.getCoordinatesValue(parcel.getGpsCoordinates()));
-        for (Data<CadastralObjectData> act : parcelsToDeleteInQuadTree) {
-            if (act.getData().getIdentityNumber() == parIdentityNumber) {
-                this.landParcelQuadTree.delete(act);
+        if (parcel != null) {
+            int[] estatesToUpdate = parcel.getBelongingRealEstates();
+            for (int i = 0; i < estatesToUpdate.length; i++) {
+                RealEstate pomRel = new RealEstate(estatesToUpdate[i]);
+                RealEstate estate = (RealEstate) this.realEstateDynamicHashing.find(pomRel);
+                estate.deleteBelongingLandParcel(parIdentityNumber);
+                this.realEstateDynamicHashing.edit(estate);
             }
+            this.landParcelDynamicHashing.delete(parcel);
+
+            // vymazanie data z quadstromu
+            ArrayList<Data<CadastralObjectData>> parcelsToDeleteInQuadTree = this.landParcelQuadTree.find(this.mapParcelTree.getCoordinatesValue(parcel.getGpsCoordinates()));
+            for (Data<CadastralObjectData> act : parcelsToDeleteInQuadTree) {
+                if (act.getData().getIdentityNumber() == parIdentityNumber) {
+                    this.landParcelQuadTree.delete(act);
+                }
+            }
+            System.out.println("Land parcel: " + parcel + " is deleted!");
+        } else {
+            System.out.println("Land parcel already deleted!");
         }
-        System.out.println("Land parcel: " + parcel + " is deleted!");
     }
 
     public void deleteRealEstate(int parIdentityNumber) {
         RealEstate pomEst = new RealEstate(parIdentityNumber);
         RealEstate estate = (RealEstate) this.realEstateDynamicHashing.find(pomEst);
-        int[] parcelsToUpdate = estate.getBelongingLandParcels();
-        for (int i = 0; i < parcelsToUpdate.length; i++) {
-            LandParcel pomPar = new LandParcel(parcelsToUpdate[i]);
-            LandParcel parcel = (LandParcel) this.landParcelDynamicHashing.find(pomPar);
-            parcel.deleteBelongingRealEstate(parIdentityNumber);
-            this.landParcelDynamicHashing.edit(parcel);
-        }
-        this.realEstateDynamicHashing.delete(estate);
-
-        // vymazanie data z quadstromu
-        ArrayList<Data<CadastralObjectData>> estatesToDeleteInQuadTree = this.realEstateQuadTree.find(this.mapEstateTree.getCoordinatesValue(estate.getGpsCoordinates()));
-        for (Data<CadastralObjectData> act : estatesToDeleteInQuadTree) {
-            if (act.getData().getIdentityNumber() == parIdentityNumber) {
-                this.realEstateQuadTree.delete(act);
+        if (estate != null) {
+            int[] parcelsToUpdate = estate.getBelongingLandParcels();
+            for (int i = 0; i < parcelsToUpdate.length; i++) {
+                LandParcel pomPar = new LandParcel(parcelsToUpdate[i]);
+                LandParcel parcel = (LandParcel) this.landParcelDynamicHashing.find(pomPar);
+                parcel.deleteBelongingRealEstate(parIdentityNumber);
+                this.landParcelDynamicHashing.edit(parcel);
             }
+            this.realEstateDynamicHashing.delete(estate);
+
+            // vymazanie data z quadstromu
+            ArrayList<Data<CadastralObjectData>> estatesToDeleteInQuadTree = this.realEstateQuadTree.find(this.mapEstateTree.getCoordinatesValue(estate.getGpsCoordinates()));
+            for (Data<CadastralObjectData> act : estatesToDeleteInQuadTree) {
+                if (act.getData().getIdentityNumber() == parIdentityNumber) {
+                    this.realEstateQuadTree.delete(act);
+                }
+            }
+            System.out.println("Real estate: " + estate + " is deleted!");
+        } else {
+            System.out.println("Real estate already deleted!");
         }
-        System.out.println("Real estate: " + estate + " is deleted!");
     }
 
     /**
@@ -404,12 +412,10 @@ public class Model {
                     }
                 }
                 if (count < MAX_COUNT_OF_ESTATES) {
-                    // resetovanie prisluchajucich estatov v editovanej parceli
                     estate.resetBelongingLandParcels();
                     for (int i = 0; i < arrayOfParcelsOnNewPlace.size(); i++) {
                         estate.addBelongingLandParcel(arrayOfParcelsOnNewPlace.get(i).getData().getIdentityNumber());
                     }
-                    // vymazanie smernika zo starych estatov
                     int[] parcelsToUpdate = estate.getBelongingLandParcels();
                     for (int i = 0; i < parcelsToUpdate.length; i++) {
                         LandParcel pomPar = new LandParcel(parcelsToUpdate[i]);
@@ -417,7 +423,6 @@ public class Model {
                         parcel.deleteBelongingRealEstate(parIdentityNumber);
                         this.landParcelDynamicHashing.edit(estate);
                     }
-                    // pridanie smernikov do novych estatov
                     for (int i = 0; i < arrayOfParcelsOnNewPlace.size(); i++) {
                         LandParcel parcelToUpdate = new LandParcel(arrayOfParcelsOnNewPlace.get(i).getData().getIdentityNumber(), null, "");
                         LandParcel parcel = (LandParcel) this.landParcelDynamicHashing.find(parcelToUpdate);
@@ -425,13 +430,11 @@ public class Model {
                         this.landParcelDynamicHashing.edit(parcel);
                     }
 
-                    // editovanie samotnej parceli
                     estate.setGpsCoordinates(parCoordinates);
                     estate.setDescription(parDescription);
                     estate.setSerialNumber(parSerialNumber);
                     this.realEstateDynamicHashing.edit(estate);
 
-                    // editovanie v strome
                     ArrayList<Data<CadastralObjectData>> estatesToDeleteInQuadTree = this.realEstateQuadTree.find(this.mapEstateTree.getCoordinatesValue(estate.getGpsCoordinates()));
                     for (Data<CadastralObjectData> act : estatesToDeleteInQuadTree) {
                         if (act.getData().getIdentityNumber() == parIdentityNumber) {
@@ -467,11 +470,20 @@ public class Model {
     public String returnSeqenceOutput(String parName) {
         if (parName.equals("L")) {
             //System.out.println(this.landParcelDynamicHashing.seqenceStringOfTrie());
-            return this.landParcelDynamicHashing.seqenceStringOfTrie();
+            if (this.landParcelDynamicHashing != null) {
+                if (this.landParcelDynamicHashing.size() < 100) {
+                    return this.landParcelDynamicHashing.seqenceStringOfTrie();
+                }
+            }
         } else {
             //System.out.println(this.realEstateDynamicHashing.seqenceStringOfTrie());
-            return this.realEstateDynamicHashing.seqenceStringOfTrie();
+            if (this.realEstateDynamicHashing != null) {
+                if (this.realEstateDynamicHashing.size() < 100) {
+                    return this.realEstateDynamicHashing.seqenceStringOfTrie();
+                }
+            }
         }
+        return "";
     }
 
 
